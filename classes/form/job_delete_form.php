@@ -36,6 +36,64 @@ require_once($CFG->dirroot.'/lib/formslib.php');
  */
 class job_delete_form extends \moodleform {
 
+    // +++ KH-HACK (Peter Mayer) Add missing methods to totara (EDEKAN-564).
+    /**
+     * Checks if a parameter was passed in the previous form submission
+     *
+     * @param string $name the name of the page parameter we want, for example 'id' or 'element[sub][13]'
+     * @param mixed  $default the default value to return if nothing is found
+     * @param string $type expected type of parameter
+     * @return mixed
+     */
+    public function optional_param($name, $default, $type) {
+        $nameparsed = [];
+        // Convert element name into a sequence of keys, for example 'element[sub][13]' -> ['element', 'sub', '13'].
+        parse_str($name . '=1', $nameparsed);
+        $keys = [];
+        while (is_array($nameparsed)) {
+            $key = key($nameparsed);
+            $keys[] = $key;
+            $nameparsed = $nameparsed[$key];
+        }
+
+        // Search for the element first in $this->_ajaxformdata, then in $_POST and then in $_GET.
+        if (($value = $this->get_array_value_by_keys($this->_ajaxformdata ?? [], $keys)) !== null ||
+            ($value = $this->get_array_value_by_keys($_POST, $keys)) !== null ||
+            ($value = $this->get_array_value_by_keys($_GET, $keys)) !== null
+        ) {
+            return $type == PARAM_RAW ? $value : clean_param($value, $type);
+        }
+
+        return $default;
+    }
+
+    /**
+     * Returns an element of multi-dimensional array given the list of keys
+     *
+     * Example:
+     * $array['a']['b']['c'] = 13;
+     * $v = $this->get_array_value_by_keys($array, ['a', 'b', 'c']);
+     *
+     * Will result it $v==13
+     *
+     * @param array $array
+     * @param array $keys
+     * @return mixed returns null if keys not present
+     */
+    protected function get_array_value_by_keys(array $array, array $keys) {
+        $value = $array;
+        foreach ($keys as $key) {
+            if (array_key_exists($key, $value)) {
+                $value = $value[$key];
+            } else {
+                return null;
+            }
+        }
+        return $value;
+    }
+
+    // --- KH-HACK (Peter Mayer) Add missing methods to totara (EDEKAN-564).
+
     /**
      * Form definiton.
      *

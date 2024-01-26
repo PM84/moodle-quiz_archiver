@@ -95,6 +95,7 @@ $string['pdf_coversheet_html_area'] = 'Dynamischer Inhalt des Deckblatts';
 $string['pdf_coversheet_html_area_help'] = 'Platzhalter für dynamische Deckblattinhalte verwenden';
 $string['pdfcoversheet_heading'] = 'PDF-Deckblatt';
 $string['define_pdfcoversheet'] = 'Deckblatt definieren';
+$string['save'] = 'Speichern';
 $string['profile'] = 'Profil';
 $string['course'] = 'Kurs';
 $string['common'] = 'Allgemein';
@@ -231,3 +232,6 @@ $string['task_autodelete_job_artifacts'] = 'Delete expired quiz archives';
 $string['task_autodelete_job_artifacts'] = 'Löschen abgelaufener Testarchive';
 $string['task_autodelete_job_artifacts_start'] = 'Lösche abgelaufene Testarchive ...';
 $string['task_autodelete_job_artifacts_report'] = '{$a} Testarchive gelöscht.';
+
+// KH-Extensions:
+$string['task_starttime'] = 'Startzeitpunkt';

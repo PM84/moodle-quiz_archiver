@@ -61,7 +61,7 @@ class job_overview_table extends \table_sql {
         ]);
 
         $this->define_headers([
-            get_string('task_starttime', 'admin'),
+            get_string('task_starttime', 'quiz_archiver'),
             get_string('status'),
             get_string('user'),
             get_string('jobid', 'quiz_archiver'),

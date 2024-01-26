@@ -24,8 +24,9 @@
 
 // TODO: Remove after deprecation of Moodle 4.1 (LTS) on 08-12-2025
 require_once($CFG->dirroot.'/mod/quiz/report/archiver/patch_401_class_renames.php');
+require_once($CFG->dirroot . '/lib/externallib.php');
+require_once($CFG->dirroot . '/mod/quiz/report/default.php');
 
-use mod_quiz\local\reports\report_base;
 use quiz_archiver\ArchiveJob;
 use quiz_archiver\BackupManager;
 use quiz_archiver\form\artifact_delete_form;
@@ -42,7 +43,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * The quiz archiver report class.
  */
-class quiz_archiver_report extends report_base {
+class quiz_archiver_report extends quiz_default_report {
 
     /** @var object course object. */
     protected $course;
@@ -213,30 +214,31 @@ class quiz_archiver_report extends report_base {
                         throw new RuntimeException(get_string('error_archive_quiz_form_validation_failed', 'quiz_archiver'));
                     }
 
-                    $formdata = $archive_quiz_form->get_data();
-                    $job = $this->initiate_archive_job(
-                        $formdata->export_attempts,
-                        Report::build_report_sections_from_formdata($formdata),
-                        $formdata->export_attempts_keep_html_files,
-                        $formdata->export_attempts_paper_format,
-                        $formdata->export_quiz_backup,
-                        $formdata->export_course_backup,
-                        $formdata->archive_filename_pattern,
-                        $formdata->export_attempts_filename_pattern,
-                        $formdata->archive_autodelete ? $formdata->archive_retention_time : null,
-                    );
-                    $tplCtx['jobInitiationStatusAlert'] = [
-                        "color" => "success",
-                        "message" => get_string('job_created_successfully', 'quiz_archiver', $job->get_jobid()),
-                        "returnMessage" => get_string('continue'),
-                    ];
-                } catch (RuntimeException $e) {
-                    $tplCtx['jobInitiationStatusAlert'] = [
-                        "color" => "danger",
-                        "message" => $e->getMessage(),
-                        "returnMessage" => get_string('retry'),
-                    ];
-                }
+                $formdata = $archive_quiz_form->get_data();
+                $job = $this->initiate_archive_job(
+                    $formdata->export_attempts,
+                    Report::build_report_sections_from_formdata($formdata),
+                    $formdata->export_attempts_keep_html_files,
+                    $formdata->export_attempts_paper_format,
+                    // +++ KH-HACK (Peter Mayer)
+                    0, //$formdata->export_quiz_backup,
+                    0, //$formdata->export_course_backup,
+                    // --- KH-HACK (Peter Mayer)
+                    $formdata->archive_filename_pattern,
+                    $formdata->export_attempts_filename_pattern,
+                );
+                $tplCtx['jobInitiationStatusAlert'] = [
+                    "color" => "success",
+                    "message" => get_string('job_created_successfully', 'quiz_archiver', $job->get_jobid()),
+                    "returnMessage" => get_string('continue'),
+                ];
+            } catch (RuntimeException $e) {
+                $tplCtx['jobInitiationStatusAlert'] = [
+                    "color" => "danger",
+                    "message" => $e->getMessage(),
+                    "returnMessage" => get_string('retry'),
+                ];
+            }
 
                 // Do not print job overview table if job creation failed
                 if ($job == null) {
@@ -357,6 +359,7 @@ class quiz_archiver_report extends report_base {
         }
 
         // Create temporary webservice token
+        /*
         if (class_exists('core_external\util')) {
             // Moodle 4.2 and above
             $wstoken = core_external\util::generate_token(
@@ -368,6 +371,7 @@ class quiz_archiver_report extends report_base {
                 0
             );
         } else {
+            */
             // Moodle 4.1 and below
             // TODO: Remove after deprecation of Moodle 4.1 (LTS) on 08-12-2025
             $wstoken = external_generate_token(
@@ -378,7 +382,7 @@ class quiz_archiver_report extends report_base {
                 time() + ($this->config->job_timeout_min * 60),
                 0
             );
-        }
+        // }
 
         // Get attempt metadata
         $attempts = $this->report->get_attempts($userid);

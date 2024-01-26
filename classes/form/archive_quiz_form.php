@@ -56,6 +56,61 @@ class archive_quiz_form extends \moodleform {
     }
 
     /**
+     * Returns an element of multi-dimensional array given the list of keys
+     *
+     * Example:
+     * $array['a']['b']['c'] = 13;
+     * $v = $this->get_array_value_by_keys($array, ['a', 'b', 'c']);
+     *
+     * Will result it $v==13
+     *
+     * @param array $array
+     * @param array $keys
+     * @return mixed returns null if keys not present
+     */
+    protected function get_array_value_by_keys(array $array, array $keys) {
+        $value = $array;
+        foreach ($keys as $key) {
+            if (array_key_exists($key, $value)) {
+                $value = $value[$key];
+            } else {
+                return null;
+            }
+        }
+        return $value;
+    }
+
+    /**
+     * Checks if a parameter was passed in the previous form submission
+     *
+     * @param string $name the name of the page parameter we want, for example 'id' or 'element[sub][13]'
+     * @param mixed  $default the default value to return if nothing is found
+     * @param string $type expected type of parameter
+     * @return mixed
+     */
+    public function optional_param($name, $default, $type) {
+        $nameparsed = [];
+        // Convert element name into a sequence of keys, for example 'element[sub][13]' -> ['element', 'sub', '13'].
+        parse_str($name . '=1', $nameparsed);
+        $keys = [];
+        while (is_array($nameparsed)) {
+            $key = key($nameparsed);
+            $keys[] = $key;
+            $nameparsed = $nameparsed[$key];
+        }
+
+        // Search for the element first in $this->_ajaxformdata, then in $_POST and then in $_GET.
+        if (($value = $this->get_array_value_by_keys($this->_ajaxformdata ?? [], $keys)) !== null ||
+            ($value = $this->get_array_value_by_keys($_POST, $keys)) !== null ||
+            ($value = $this->get_array_value_by_keys($_GET, $keys)) !== null
+        ) {
+            return $type == PARAM_RAW ? $value : clean_param($value, $type);
+        }
+
+        return $default;
+    }
+
+    /**
      * Form definiton.
      * @throws \dml_exception
      * @throws \coding_exception
@@ -100,9 +155,11 @@ class archive_quiz_form extends \moodleform {
                 $config->{'job_preset_export_report_section_'.$section.'_locked'} ? 'disabled' : null
             );
             $mform->addHelpButton('export_report_section_'.$section, 'export_report_section_'.$section, 'quiz_archiver');
-            $mform->setDefault('export_report_section_'.$section, $config->{'job_preset_export_report_section_'.$section});
+            if (!empty($config->{'job_preset_export_report_section_' . $section})) {
+                $mform->setDefault('export_report_section_'.$section, $config->{'job_preset_export_report_section_'.$section});
+            }
 
-            if (!$config->{'job_preset_export_report_section_'.$section.'_locked'}) {
+            if (empty($config->{'job_preset_export_report_section_'.$section.'_locked'})) {
                 foreach (REPORT::SECTION_DEPENDENCIES[$section] as $dependency) {
                     $mform->disabledIf('export_report_section_'.$section, 'export_report_section_'.$dependency, 'notchecked');
                 }
@@ -110,6 +167,7 @@ class archive_quiz_form extends \moodleform {
         }
 
         // Options: Backups
+        /*
         $mform->addElement(
             'advcheckbox',
             'export_quiz_backup',
@@ -129,7 +187,7 @@ class archive_quiz_form extends \moodleform {
         );
         $mform->addHelpButton('export_course_backup', 'export_course_backup', 'quiz_archiver');
         $mform->setDefault('export_course_backup', $config->job_preset_export_course_backup);
-
+        */
         // Advanced options
         $mform->addElement('header', 'header_advanced_settings', get_string('advancedsettings'));
         $mform->setExpanded('header_advanced_settings', false);
@@ -142,8 +200,9 @@ class archive_quiz_form extends \moodleform {
             $config->job_preset_export_attempts_paper_format_locked ? 'disabled' : null
         );
         $mform->addHelpButton('export_attempts_paper_format', 'export_attempts_paper_format', 'quiz_archiver');
-        $mform->setDefault('export_attempts_paper_format', $config->job_preset_export_attempts_paper_format);
-
+        if (!empty($config->job_preset_export_attempts_paper_format)) {
+            $mform->setDefault('export_attempts_paper_format', $config->job_preset_export_attempts_paper_format);
+        }
         $mform->addElement(
             'advcheckbox',
             'export_attempts_keep_html_files',
@@ -152,8 +211,9 @@ class archive_quiz_form extends \moodleform {
             $config->job_preset_export_attempts_keep_html_files_locked ? 'disabled' : null
         );
         $mform->addHelpButton('export_attempts_keep_html_files', 'export_attempts_keep_html_files', 'quiz_archiver');
-        $mform->setDefault('export_attempts_keep_html_files', $config->job_preset_export_attempts_keep_html_files);
-
+        if (!empty($config->job_preset_export_attempts_keep_html_files)) {
+            $mform->setDefault('export_attempts_keep_html_files', $config->job_preset_export_attempts_keep_html_files);
+        }
         $mform->addElement(
             'text',
             'archive_filename_pattern',
@@ -169,7 +229,9 @@ class archive_quiz_form extends \moodleform {
             'forbiddenchars' => implode('', ArchiveJob::FILENAME_FORBIDDEN_CHARACTERS),
         ]);
         $mform->setType('archive_filename_pattern', PARAM_TEXT);
-        $mform->setDefault('archive_filename_pattern', $config->job_preset_archive_filename_pattern);
+        if (!empty($config->job_preset_archive_filename_pattern)) {
+            $mform->setDefault('archive_filename_pattern', $config->job_preset_archive_filename_pattern);
+        }
         $mform->addRule('archive_filename_pattern', null, 'maxlength', 255, 'client');
 
         $mform->addElement(
@@ -187,7 +249,9 @@ class archive_quiz_form extends \moodleform {
             'forbiddenchars' => implode('', ArchiveJob::FILENAME_FORBIDDEN_CHARACTERS),
         ]);
         $mform->setType('export_attempts_filename_pattern', PARAM_TEXT);
-        $mform->setDefault('export_attempts_filename_pattern', $config->job_preset_export_attempts_filename_pattern);
+        if (!empty($config->job_preset_export_attempts_filename_pattern)) {
+            $mform->setDefault('export_attempts_filename_pattern', $config->job_preset_export_attempts_filename_pattern);
+        }
         $mform->addRule('export_attempts_filename_pattern', null, 'maxlength', 255, 'client');
 
         $mform->addElement(

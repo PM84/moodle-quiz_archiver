@@ -101,6 +101,9 @@ $string['profile'] = 'Profile';
 $string['course'] = 'Course';
 $string['common'] = 'Common';
 $string['dateformat'] = 'd/m/Y';
+$string['save'] = 'Save';
+$string['common'] = 'Common';
+$string['dateformat'] = 'd/m/Y';
 
 // Job creation form: Filename pattern
 $string['archive_filename_pattern'] = 'Archive name';
@@ -230,3 +233,6 @@ $string['task_cleanup_temp_files_report'] = 'Deleted {$a} temporary files.';
 $string['task_autodelete_job_artifacts'] = 'Delete expired quiz archives';
 $string['task_autodelete_job_artifacts_start'] = 'Deleting expired quiz archives ...';
 $string['task_autodelete_job_artifacts_report'] = 'Deleted {$a} quiz archives.';
+
+// KH-Extensions:
+$string['task_starttime'] = 'Start time';

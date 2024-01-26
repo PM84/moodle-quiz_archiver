@@ -106,13 +106,14 @@ if ($hassiteconfig) {
             );
             $set->set_locked_flag_options(admin_setting_flag::ENABLED, false);
 
-            foreach (Report::SECTION_DEPENDENCIES[$section] as $dependency) {
-                $set->add_dependent_on('quiz_archiver/job_preset_export_report_section_'.$dependency);
-            }
+            // foreach (Report::SECTION_DEPENDENCIES[$section] as $dependency) {
+            //     $set->add_dependent_on('quiz_archiver/job_preset_export_report_section_'.$dependency);
+            // }
 
             $settings->add($set);
         }
 
+        /*
         $set = new admin_setting_configcheckbox('quiz_archiver/job_preset_export_quiz_backup',
             get_string('export_quiz_backup', 'quiz_archiver'),
             get_string('export_quiz_backup_help', 'quiz_archiver'),
@@ -128,6 +129,7 @@ if ($hassiteconfig) {
         );
         $set->set_locked_flag_options(admin_setting_flag::ENABLED, false);
         $settings->add($set);
+        */
 
         $set = new admin_setting_configselect('quiz_archiver/job_preset_export_attempts_paper_format',
             get_string('export_attempts_paper_format', 'quiz_archiver'),
@@ -193,7 +195,9 @@ if ($hassiteconfig) {
             DAYSECS
         );
         $set->set_locked_flag_options(admin_setting_flag::ENABLED, true);
-        $set->add_dependent_on('quiz_archiver/job_preset_archive_autodelete');
+        // +++ KH-HACK (Peter Mayer)
+        // $set->add_dependent_on('quiz_archiver/job_preset_archive_autodelete');
+        // --- KH-HACK (Peter Mayer)
         $settings->add($set);
 
         $settings->add(new admin_setting_heading(

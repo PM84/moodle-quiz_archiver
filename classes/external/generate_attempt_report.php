@@ -124,7 +124,6 @@ class generate_attempt_report extends external_api {
         bool $attachments_raw
     ): array {
         global $DB;
-
         // Validate request
         $params = self::validate_parameters(self::execute_parameters(), [
             'courseid' => $courseid_raw,

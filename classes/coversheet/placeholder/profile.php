@@ -118,7 +118,7 @@ class profile {
      */
     public static function userfullname( object $params): string {
         $user = \core_user::get_user($params->userid);
-        return \core_user::get_fullname($user);
+        return $user->firstname . " " . $user->lastname;
     }
 
     /**

@@ -43,7 +43,7 @@ $PAGE->set_title($pagetitle);
 $PAGE->set_heading($pagetitle);
 
 // No secondary navigation.
-$PAGE->set_secondary_navigation(false);
+// $PAGE->set_secondary_navigation(false);
 
 $templatecontext = [];
 

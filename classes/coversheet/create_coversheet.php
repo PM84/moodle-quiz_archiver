@@ -69,7 +69,6 @@ class create_coversheet {
             $replacement = self::check_class_and_method($classpath, $method, $attemptmetadata);
             $html = preg_replace('/' . $placeholder . '/', $replacement, $html);
         }
-        \local_debugger\performance\debugger::print_debug('test', 'html', $html);
 
         $filename = !empty($config->pdfcoversheetbackgroundimage) ? $config->pdfcoversheetbackgroundimage : null;
         $fs = get_file_storage();
@@ -160,7 +159,7 @@ class create_coversheet {
             $show = '';
             if($i == 1) {
                 $show = 'show';
-                $active = 'active';
+                $active = 'active in';
             }
             $placeholders[] = [
                 'placeholders' => self::get_placeholders($basename, "\quiz_archiver\coversheet\placeholder\\$basename"),
