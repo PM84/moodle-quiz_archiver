@@ -16,10 +16,20 @@ jobs:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
 
-      mariadb:
-        image: mariadb:10
+      # mariadb:
+      #   image: mariadb:10
+      #   env:
+      #     MYSQL_USER: 'root'
+      #     MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+      #     MYSQL_CHARACTER_SET_SERVER: "utf8mb4"
+      #     MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
+      #   ports:
+      #     - 3306:3306
+      #   options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
+
+      mysqldb:
+        image: mysql:8.0
         env:
-          MYSQL_USER: 'root'
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
           MYSQL_CHARACTER_SET_SERVER: "utf8mb4"
           MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
@@ -33,25 +43,33 @@ jobs:
         include:
           # Moodle 4.1 (LTS), PHP 7.4 to 8.1, PostgreSQL and MariaDB
           - {moodle-branch: 'MOODLE_401_STABLE', php: '7.4', database: 'pgsql'}
-          - {moodle-branch: 'MOODLE_401_STABLE', php: '7.4', database: 'mariadb'}
+          # - {moodle-branch: 'MOODLE_401_STABLE', php: '7.4', database: 'mariadb'}
+          - {moodle-branch: 'MOODLE_401_STABLE', php: '7.4', database: 'mysqli'}
           - {moodle-branch: 'MOODLE_401_STABLE', php: '8.0', database: 'pgsql'}
-          - {moodle-branch: 'MOODLE_401_STABLE', php: '8.0', database: 'mariadb'}
+          # - {moodle-branch: 'MOODLE_401_STABLE', php: '8.0', database: 'mariadb'}
+          - {moodle-branch: 'MOODLE_401_STABLE', php: '8.0', database: 'mysqli'}
           - {moodle-branch: 'MOODLE_401_STABLE', php: '8.1', database: 'pgsql'}
-          - {moodle-branch: 'MOODLE_401_STABLE', php: '8.1', database: 'mariadb'}
+          # - {moodle-branch: 'MOODLE_401_STABLE', php: '8.1', database: 'mariadb'}
+          - {moodle-branch: 'MOODLE_401_STABLE', php: '8.1', database: 'mysqli'}
 
           # Moodle 4.2, PHP 8.0 to 8.1, PostgreSQL and MariaDB
           - {moodle-branch: 'MOODLE_402_STABLE', php: '8.0', database: 'pgsql'}
-          - {moodle-branch: 'MOODLE_402_STABLE', php: '8.0', database: 'mariadb'}
+          # - {moodle-branch: 'MOODLE_402_STABLE', php: '8.0', database: 'mariadb'}
+          - {moodle-branch: 'MOODLE_402_STABLE', php: '8.0', database: 'mysqli'}
           - {moodle-branch: 'MOODLE_402_STABLE', php: '8.1', database: 'pgsql'}
-          - {moodle-branch: 'MOODLE_402_STABLE', php: '8.1', database: 'mariadb'}
+          # - {moodle-branch: 'MOODLE_402_STABLE', php: '8.1', database: 'mariadb'}
+          - {moodle-branch: 'MOODLE_402_STABLE', php: '8.1', database: 'mysqli'}
 
           # Moodle 4.3, PHP 8.0 to 8.2, PostgreSQL and MariaDB
           - {moodle-branch: 'MOODLE_403_STABLE', php: '8.0', database: 'pgsql'}
-          - {moodle-branch: 'MOODLE_403_STABLE', php: '8.0', database: 'mariadb'}
+          # - {moodle-branch: 'MOODLE_403_STABLE', php: '8.0', database: 'mariadb'}
+          - {moodle-branch: 'MOODLE_403_STABLE', php: '8.0', database: 'mysqli'}
           - {moodle-branch: 'MOODLE_403_STABLE', php: '8.1', database: 'pgsql'}
-          - {moodle-branch: 'MOODLE_403_STABLE', php: '8.1', database: 'mariadb'}
+          # - {moodle-branch: 'MOODLE_403_STABLE', php: '8.1', database: 'mariadb'}
+          - {moodle-branch: 'MOODLE_403_STABLE', php: '8.1', database: 'mysqli'}
           - {moodle-branch: 'MOODLE_403_STABLE', php: '8.2', database: 'pgsql'}
-          - {moodle-branch: 'MOODLE_403_STABLE', php: '8.2', database: 'mariadb'}
+          # - {moodle-branch: 'MOODLE_403_STABLE', php: '8.2', database: 'mariadb'}
+          - {moodle-branch: 'MOODLE_403_STABLE', php: '8.2', database: 'mysqli'}
 
     steps:
       - name: Check out repository code
