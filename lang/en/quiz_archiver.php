@@ -83,6 +83,8 @@ $string['export_report_section_attachments'] = 'Include file attachments';
 $string['export_report_section_attachments_help'] = 'Include all file attachments (e.g., essay file submissions) inside the archive. Warning: This can significantly increase the archive size.';
 $string['job_overview'] = 'Archives';
 $string['num_attempts'] = 'Number of attempts';
+
+// Language strings for pdf cover sheet.
 $string['pdfcoversheet_settings'] = 'PDF Cover Sheet';
 $string['pdfcoversheet_settings_desc'] = 'Define a default cover sheet';
 $string['enable_pdf_coversheet'] = 'Ad PDF cover sheet';
@@ -93,6 +95,10 @@ $string['pdf_coversheet_html_area'] = 'Coversheet dynamic content';
 $string['pdf_coversheet_html_area_help'] = 'Use placeholders for dynamic cover sheet contents';
 $string['pdfcoversheet_heading'] = 'PDF Cover Sheet';
 $string['define_pdfcoversheet'] = 'Define Cover Sheet';
+$string['exiting_placeholders'] = 'Possible Placeholders';
+$string['exiting_placeholders_desc'] = 'You can use the placeholder by writing {{placeholder}} e.g. {{profile_userfullname}} to the template above.';
+$string['profile'] = 'Profile';
+$string['course'] = 'Course';
 
 // Job creation form: Filename pattern
 $string['archive_filename_pattern'] = 'Archive name';

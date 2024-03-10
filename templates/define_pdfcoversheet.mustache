@@ -32,12 +32,36 @@
 
 <div>
   <form method="POST">
-
     <div class="mb-3">
       <label for="dynamic_pdf_content" class="form-label">{{#str}} pdf_coversheet_html_area, quiz_archiver {{/str}}</label>
-      <textarea class="form-control" id="dynamic_pdf_content" name='dynamic_pdf_content' rows="20">{{{storedhtml}}}</textarea>
+      <textarea class="form-control" id="dynamic_pdf_content" name='dynamic_pdf_content' rows="20" placeholder="<h2>EXAMPLE</h2>
+<p>This is an example, and will not be present in the PDF.</p>">{{{storedhtml}}}</textarea>
     </div>
+    <div>
+      <h4>{{#str}}exiting_placeholders, quiz_archiver{{/str}}</h4>
+      <p>{{#str}}exiting_placeholders_desc, quiz_archiver{{/str}}</p>
 
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        {{#placeholderdata}}
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-toggle="tab" id='nav-{{metadata.tabid}}' data-target="#{{metadata.tabid}}"
+          type="button" role="tab" aria-controls="{{metadata.tabid}}">{{metadata.tab}}</button>
+        </li>
+        {{/placeholderdata}}
+      </ul>
+      <div class="tab-content" id="myTabContent">
+        {{#placeholderdata}}
+        <div class="tab-pane fade" id="{{metadata.tabid}}" role="tabpanel" aria-labelledby="nav-{{metadata.tabid}}">
+          <ul>
+            {{#placeholders}}
+            <li>{{.}}</li>
+            {{/placeholders}}
+          </ul>
+        </div>
+        {{/placeholderdata}}
+      </div>
+      </div>
+      <hr>
     <button class="btn btn-primary" name="action" value="storecoversheet" type="submit">{{#str}} save {{/str}}</button>
   </form>
 </div>

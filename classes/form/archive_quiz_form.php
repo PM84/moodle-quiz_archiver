@@ -128,6 +128,7 @@ class archive_quiz_form extends \moodleform {
             $config->job_preset_export_course_backup_locked ? 'disabled' : null
         );
         $mform->addHelpButton('export_course_backup', 'export_course_backup', 'quiz_archiver');
+        $mform->setDefault('export_course_backup', $config->job_preset_export_course_backup);
 
         // Advanced options
         $mform->addElement('header', 'header_advanced_settings', get_string('advancedsettings'));

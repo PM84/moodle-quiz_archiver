@@ -565,7 +565,7 @@ class Report {
         // Build HTML tree
         $html = "";
         $html .= $OUTPUT->header();
-        // $html .= \quiz_archiver\local\coversheet\create_coversheet::get_coversheet($attemptid);
+        $html .= \quiz_archiver\coversheet\create_coversheet::get_coversheet($attemptid);
         $html .= self::generate($attemptid, $sections);
         $html .= $OUTPUT->footer();
 

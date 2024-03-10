@@ -90,6 +90,8 @@ $templatecontext['storedhtml'] = '<html>
 if(!empty($dynamicpdfcontent = get_config('quiz_archiver', 'dynamic_pdf_content'))) {
     $templatecontext['storedhtml'] = get_config('quiz_archiver', 'dynamic_pdf_content');
 }
+
+$templatecontext['placeholderdata'] = \quiz_archiver\coversheet\create_coversheet::get_possible_placeholders();
 // print_r(get_config('quiz_archiver', 'dynamic_pdf_content'));die;
 echo $OUTPUT->header();
 

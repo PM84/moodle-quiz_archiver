@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace quiz_archiver\local\setting\admin;
+namespace quiz_archiver\local\admin\setting;
 
 use admin_setting_heading;
 
