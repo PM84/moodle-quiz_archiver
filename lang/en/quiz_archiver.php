@@ -83,6 +83,16 @@ $string['export_report_section_attachments'] = 'Include file attachments';
 $string['export_report_section_attachments_help'] = 'Include all file attachments (e.g., essay file submissions) inside the archive. Warning: This can significantly increase the archive size.';
 $string['job_overview'] = 'Archives';
 $string['num_attempts'] = 'Number of attempts';
+$string['pdfcoversheet_settings'] = 'PDF Cover Sheet';
+$string['pdfcoversheet_settings_desc'] = 'Define a default cover sheet';
+$string['enable_pdf_coversheet'] = 'Ad PDF cover sheet';
+$string['enable_pdf_coversheet_help'] = 'Add a cover sheet to the attempts pdf';
+$string['pdf_coversheet_backgroundimage'] = 'Cover Sheet Background Image';
+$string['pdf_coversheet_backgroundimage_help'] = 'The background image should have the desired page format.';
+$string['pdf_coversheet_html_area'] = 'Coversheet dynamic content';
+$string['pdf_coversheet_html_area_help'] = 'Use placeholders for dynamic cover sheet contents';
+$string['pdfcoversheet_heading'] = 'PDF Cover Sheet';
+$string['define_pdfcoversheet'] = 'Define Cover Sheet';
 
 // Job creation form: Filename pattern
 $string['archive_filename_pattern'] = 'Archive name';

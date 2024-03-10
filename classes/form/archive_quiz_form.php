@@ -76,6 +76,7 @@ class archive_quiz_form extends \moodleform {
 
         // Options
         $mform->addElement('header', 'header_settings', get_string('settings'));
+        $mform->setExpanded('header_settings', false);
 
         // Options: Test
         $mform->addElement('static', 'quiz_name', get_string('modulename', 'mod_quiz'), $this->quiz_name);
@@ -129,6 +130,33 @@ class archive_quiz_form extends \moodleform {
         );
         $mform->addHelpButton('export_course_backup', 'export_course_backup', 'quiz_archiver');
         $mform->setDefault('export_course_backup', $config->job_preset_export_course_backup);
+
+        // PDF cover sheet.
+        $mform->addElement('header', 'header_pdfcoversheet_settings', get_string('pdfcoversheet_settings', 'quiz_archiver'));
+        $mform->setExpanded('header_pdfcoversheet_settings', true);
+
+        $mform->addElement(
+            'advcheckbox',
+            'enable_pdf_coversheet',
+            '&nbsp;',
+            get_string('enable_pdf_coversheet', 'quiz_archiver'),
+            $config->{'job_preset_export_report_section_' . $section . '_locked'} ? 'disabled' : null
+        );
+        $mform->addHelpButton('enable_pdf_coversheet', 'enable_pdf_coversheet', 'quiz_archiver');
+
+        $mform->addElement(
+            'filepicker',
+            'pdf_coversheet_background',
+            get_string('pdf_coversheet_backgroundimage', 'quiz_archiver'),
+            null,
+            [
+                'accepted_types' => 'png, jpg',
+            ]
+        );
+        $mform->addHelpButton('pdf_coversheet_background', 'pdf_coversheet_backgroundimage', 'quiz_archiver');
+
+        $mform->addElement('textarea', 'pdf_coversheet_html_area', get_string("pdf_coversheet_html_area", "quiz_archiver"), 'wrap="virtual" rows="20" cols="50"');
+        $mform->addHelpButton('pdf_coversheet_html_area', 'pdf_coversheet_html_area', 'quiz_archiver');
 
         // Advanced options
         $mform->addElement('header', 'header_advanced_settings', get_string('advancedsettings'));

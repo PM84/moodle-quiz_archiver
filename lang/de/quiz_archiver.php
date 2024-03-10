@@ -84,6 +84,18 @@ $string['export_report_section_attachments_help'] = 'Alle Dateiabgaben (z.B. von
 $string['job_overview'] = 'Testarchive';
 $string['num_attempts'] = 'Anzahl Testversuche';
 
+// Language strings for pdf cover sheet.
+$string['pdfcoversheet_settings'] = 'PDF-Deckblatt';
+$string['pdfcoversheet_settings_desc'] = 'Ein Standard-Deckblatt festlegen';
+$string['enable_pdf_coversheet'] = 'PDF-Deckblatt anzeigen';
+$string['enable_pdf_coversheet_help'] = 'Ein Deckblatt zu den PDF-Versuchen hinzufügen';
+$string['pdf_coversheet_backgroundimage'] = 'Deckblatt-Hintergrundbild';
+$string['pdf_coversheet_backgroundimage_help'] = 'Das Hintergrundbild sollte das gewünschte Seitenformat haben.';
+$string['pdf_coversheet_html_area'] = 'Dynamischer Inhalt des Deckblatts';
+$string['pdf_coversheet_html_area_help'] = 'Platzhalter für dynamische Deckblattinhalte verwenden';
+$string['pdfcoversheet_heading'] = 'PDF-Deckblatt';
+$string['define_pdfcoversheet'] = 'Deckblatt definieren';
+
 // Job creation form: Filename pattern
 $string['archive_filename_pattern'] = 'Archivname';
 $string['archive_filename_pattern_help'] = 'Name des erzeugten Archivs. Variablen <b>müssen</b> dem <code>${variablename}</code> Muster folgen. Die Dateiendung wird automatisch hinzugefügt.<br><br><b>Verfügbare Variablen</b>: <ul>{$a->variables}</ul><b>Verbotene Zeichen</b>: <code>{$a->forbiddenchars}</code>';
