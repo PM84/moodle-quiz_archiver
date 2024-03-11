@@ -58,9 +58,9 @@ function quiz_archiver_pluginfile($course, $cm, $context, $filearea, $args, $for
     }
 
     // Validate course
-    // if ($args[1] !== $course->id) {
-    //     send_file_not_found();
-    // }
+    if ($args[1] !== $course->id) {
+        send_file_not_found();
+    }
 
     // Try to serve file
     $fs = get_file_storage();

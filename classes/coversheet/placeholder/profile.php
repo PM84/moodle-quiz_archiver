@@ -180,4 +180,24 @@ class profile {
         $user = \core_user::get_user($params->userid);
         return $user->lang;
     }
+
+    /**
+     * Get user idnumber.
+     * @param object $params
+     * @return string
+     */
+    public static function idnumber(object $params): string {
+        $user = \core_user::get_user($params->userid);
+        return $user->idnumber;
+    }
+
+    /**
+     * Get user matricel number.
+     * @param object $params
+     * @return string
+     */
+    public static function matricelnumber(object $params): string {
+        return self::idnumber($params);
+    }
+
 }

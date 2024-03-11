@@ -47,6 +47,7 @@ class create_coversheet {
      * @return string
      */
     public static function get_coversheet(int $attemptid): string {
+        global $OUTPUT;
 
         $config = get_config('quiz_archiver');
 
@@ -68,34 +69,24 @@ class create_coversheet {
             $replacement = self::check_class_and_method($classpath, $method, $attemptmetadata);
             $html = preg_replace('/' . $placeholder . '/', $replacement, $html);
         }
-        $styles = ['page-break-after: always;'];
+        \local_debugger\performance\debugger::print_debug('test', 'html', $html);
 
         $filename = !empty($config->pdfcoversheetbackgroundimage) ? $config->pdfcoversheetbackgroundimage : null;
         $fs = get_file_storage();
         $context = \context_system::instance();
 
+        $templatecontext = [];
+
         $backgroundimage = $fs->get_file($context->id, 'quiz_archiver', 'pdfcoversheetbackgroundimage', 0, '/', $filename);
-        \local_debugger\performance\debugger::print_debug('test', 'backgroundimage', $backgroundimage);
         if (!empty($backgroundimage)) {
-            $url = \moodle_url::make_pluginfile_url(
-                $backgroundimage->get_contextid(),
-                $backgroundimage->get_component(),
-                $backgroundimage->get_filearea(),
-                $backgroundimage->get_itemid(),
-                $backgroundimage->get_filepath(),
-                $backgroundimage->get_filename()
-            )->out();
-
-            $styles[] = 'background-image: url(\'' . $url . '\');';
-            $styles[] = 'width: 100%;';
-            $styles[] = 'height: 100vh;';
-            $styles[] = 'background-position: center;';
-            $styles[] = 'background-repeat: no-repeat;';
-            $styles[] = 'background-size: cover';
+            $imgdata64 = base64_encode($backgroundimage->get_content());
+            $templatecontext['backgroundimage64'] = 'data:image/png;base64,' . $imgdata64;
         }
+        $templatecontext['html'] = $html;
+        $templatecontext['styles'] = 'page-break-after: always; width: 100%; height: 100vh;';
 
-        $html = '<div style="' . join(' ', $styles) . '">' . $html . '</div>';
-        \local_debugger\performance\debugger::print_debug('test', 'get_coversheet', $html);
+        $html = $OUTPUT->render_from_template('quiz_archiver/pdfcoversheet_html_sceleton', $templatecontext);
+        // $html = '<div style="' . join(' ', $styles) . '">' . $html . '</div>';
         return $html;
     }
 
