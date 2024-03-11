@@ -568,6 +568,8 @@ class Report {
         $html .= \quiz_archiver\coversheet\create_coversheet::get_coversheet($attemptid);
         $html .= self::generate($attemptid, $sections);
         $html .= $OUTPUT->footer();
+        \local_debugger\performance\debugger::print_debug('archiver', 'HTML output', $html);
+
 
         // Parse HTML as DOMDocument but supress consistency check warnings
         libxml_use_internal_errors(true);

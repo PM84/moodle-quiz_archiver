@@ -209,6 +209,16 @@ if ($hassiteconfig) {
             '0',
         ));
 
+        // PDF cover sheet backround image.
+        $settings->add(new admin_setting_configstoredfile(
+            'quiz_archiver/pdfcoversheetbackgroundimage',
+            get_string('pdf_coversheet_backgroundimage', 'quiz_archiver'),
+            get_string('pdf_coversheet_backgroundimage_desc', 'quiz_archiver'),
+            'pdfcoversheetbackgroundimage',
+            0,
+            ['maxfiles' => 1, 'accepted_types' => ['.png', '.jpg']]
+        ));
+
         $settings->add(
             new setting_button(
                 'quiz_archiver/pdfcoversheet_settings',

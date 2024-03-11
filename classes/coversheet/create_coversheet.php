@@ -68,9 +68,35 @@ class create_coversheet {
             $replacement = self::check_class_and_method($classpath, $method, $attemptmetadata);
             $html = preg_replace('/' . $placeholder . '/', $replacement, $html);
         }
+        $styles = ['page-break-after: always;'];
 
+        $filename = !empty($config->pdfcoversheetbackgroundimage) ? $config->pdfcoversheetbackgroundimage : null;
+        $fs = get_file_storage();
+        $context = \context_system::instance();
+
+        $backgroundimage = $fs->get_file($context->id, 'quiz_archiver', 'pdfcoversheetbackgroundimage', 0, '/', $filename);
+        \local_debugger\performance\debugger::print_debug('test', 'backgroundimage', $backgroundimage);
+        if (!empty($backgroundimage)) {
+            $url = \moodle_url::make_pluginfile_url(
+                $backgroundimage->get_contextid(),
+                $backgroundimage->get_component(),
+                $backgroundimage->get_filearea(),
+                $backgroundimage->get_itemid(),
+                $backgroundimage->get_filepath(),
+                $backgroundimage->get_filename()
+            )->out();
+
+            $styles[] = 'background-image: url(\'' . $url . '\');';
+            $styles[] = 'width: 100%;';
+            $styles[] = 'height: 100vh;';
+            $styles[] = 'background-position: center;';
+            $styles[] = 'background-repeat: no-repeat;';
+            $styles[] = 'background-size: cover';
+        }
+
+        $html = '<div style="' . join(' ', $styles) . '">' . $html . '</div>';
         \local_debugger\performance\debugger::print_debug('test', 'get_coversheet', $html);
-        return '<div style="page-break-after: always;">' . $config->dynamic_pdf_content . '</div>';
+        return $html;
     }
 
     /**
