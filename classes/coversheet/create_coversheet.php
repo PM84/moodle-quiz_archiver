@@ -154,14 +154,25 @@ class create_coversheet {
         $placeholders = [];
         $dir = $CFG->dirroot . "/mod/quiz/report/archiver/classes/coversheet/placeholder";
         $basenames = self::get_all_files_in_directory($dir);
+        $i = 1;
         foreach ($basenames as $basename) {
+            $active = '';
+            $show = '';
+            if($i == 1) {
+                $show = 'show';
+                $active = 'active';
+            }
             $placeholders[] = [
                 'placeholders' => self::get_placeholders($basename, "\quiz_archiver\coversheet\placeholder\\$basename"),
                 'metadata' => [
                     'tabid' => 'qa_' . $basename . '_tab',
                     'tab' => get_string($basename, 'quiz_archiver'),
+                    'active' => $active,
+                    'show' => $show,
                 ],
             ];
+
+            $i++;
         }
 
         return $placeholders;

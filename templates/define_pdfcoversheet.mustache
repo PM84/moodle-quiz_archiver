@@ -44,14 +44,14 @@
       <ul class="nav nav-tabs" id="myTab" role="tablist">
         {{#placeholderdata}}
         <li class="nav-item" role="presentation">
-          <button class="nav-link" data-toggle="tab" id='nav-{{metadata.tabid}}' data-target="#{{metadata.tabid}}"
+          <button class="nav-link {{metadata.active}}" data-toggle="tab" id='nav-{{metadata.tabid}}' data-target="#{{metadata.tabid}}"
           type="button" role="tab" aria-controls="{{metadata.tabid}}">{{metadata.tab}}</button>
         </li>
         {{/placeholderdata}}
       </ul>
       <div class="tab-content" id="myTabContent">
         {{#placeholderdata}}
-        <div class="tab-pane fade" id="{{metadata.tabid}}" role="tabpanel" aria-labelledby="nav-{{metadata.tabid}}">
+        <div class="tab-pane fade {{metadata.show}} {{metadata.active}}" id="{{metadata.tabid}}" role="tabpanel" aria-labelledby="nav-{{metadata.tabid}}">
           <ul>
             {{#placeholders}}
             <li>{{.}}</li>

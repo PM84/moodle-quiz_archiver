@@ -99,6 +99,8 @@ $string['exiting_placeholders'] = 'Possible Placeholders';
 $string['exiting_placeholders_desc'] = 'You can use the placeholder by writing {{placeholder}} e.g. {{profile_userfullname}} to the template above.';
 $string['profile'] = 'Profile';
 $string['course'] = 'Course';
+$string['common'] = 'Common';
+$string['dateformat'] = 'd/m/Y';
 
 // Job creation form: Filename pattern
 $string['archive_filename_pattern'] = 'Archive name';

@@ -95,6 +95,10 @@ $string['pdf_coversheet_html_area'] = 'Dynamischer Inhalt des Deckblatts';
 $string['pdf_coversheet_html_area_help'] = 'Platzhalter für dynamische Deckblattinhalte verwenden';
 $string['pdfcoversheet_heading'] = 'PDF-Deckblatt';
 $string['define_pdfcoversheet'] = 'Deckblatt definieren';
+$string['profile'] = 'Profil';
+$string['course'] = 'Kurs';
+$string['common'] = 'Allgemein';
+$string['dateformat'] = 'd.m.Y';
 
 // Job creation form: Filename pattern
 $string['archive_filename_pattern'] = 'Archivname';
