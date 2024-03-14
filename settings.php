@@ -219,6 +219,14 @@ if ($hassiteconfig) {
             ['maxfiles' => 1, 'accepted_types' => ['.png', '.jpg']]
         ));
 
+        $settings->add(new admin_setting_configtext(
+            'quiz_archiver/backgroundimage_height',
+            get_string('setting_backgroundimage_height', 'quiz_archiver'),
+            get_string('setting_backgroundimage_height_desc', 'quiz_archiver'),
+            '1000px',
+            PARAM_ALPHANUM
+        ));
+
         $settings->add(
             new setting_button(
                 'quiz_archiver/pdfcoversheet_settings',

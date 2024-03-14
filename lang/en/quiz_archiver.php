@@ -101,6 +101,8 @@ $string['profile'] = 'Profile';
 $string['course'] = 'Course';
 $string['common'] = 'Common';
 $string['dateformat'] = 'd/m/Y';
+$string['setting_backgroundimage_height'] = 'Backgroundimage Height';
+$string['setting_backgroundimage_height_desc'] = 'The height of the backgroundimage. If this setting is to big, the coversheet may be split up into two pages.';
 
 // Job creation form: Filename pattern
 $string['archive_filename_pattern'] = 'Archive name';

@@ -85,8 +85,10 @@ $string['job_overview'] = 'Testarchive';
 $string['num_attempts'] = 'Anzahl Testversuche';
 
 // Language strings for pdf cover sheet.
-$string['pdfcoversheet_settings'] = 'PDF-Deckblatt';
-$string['pdfcoversheet_settings_desc'] = 'Ein Standard-Deckblatt festlegen';
+$string['common'] = 'Allgemein';
+$string['course'] = 'Kurs';
+$string['dateformat'] = 'd.m.Y';
+$string['define_pdfcoversheet'] = 'Deckblatt definieren';
 $string['enable_pdf_coversheet'] = 'PDF-Deckblatt anzeigen';
 $string['enable_pdf_coversheet_help'] = 'Ein Deckblatt zu den PDF-Versuchen hinzufügen';
 $string['pdf_coversheet_backgroundimage'] = 'Deckblatt-Hintergrundbild';
@@ -94,11 +96,11 @@ $string['pdf_coversheet_backgroundimage_help'] = 'Das Hintergrundbild sollte das
 $string['pdf_coversheet_html_area'] = 'Dynamischer Inhalt des Deckblatts';
 $string['pdf_coversheet_html_area_help'] = 'Platzhalter für dynamische Deckblattinhalte verwenden';
 $string['pdfcoversheet_heading'] = 'PDF-Deckblatt';
-$string['define_pdfcoversheet'] = 'Deckblatt definieren';
+$string['pdfcoversheet_settings'] = 'PDF-Deckblatt';
+$string['pdfcoversheet_settings_desc'] = 'Ein Standard-Deckblatt festlegen';
 $string['profile'] = 'Profil';
-$string['course'] = 'Kurs';
-$string['common'] = 'Allgemein';
-$string['dateformat'] = 'd.m.Y';
+$string['setting_backgroundimage_height'] = 'Höhe des Hintergrundbildes';
+$string['setting_backgroundimage_height_desc'] = 'Die Höhe des Hintergrundbildes. Wenn diese Einstellung zu groß ist, kann das Deckblatt auf zwei Seiten aufgeteilt werden.';
 
 // Job creation form: Filename pattern
 $string['archive_filename_pattern'] = 'Archivname';

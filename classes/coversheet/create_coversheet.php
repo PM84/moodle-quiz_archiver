@@ -83,10 +83,11 @@ class create_coversheet {
             $templatecontext['backgroundimage64'] = 'data:image/png;base64,' . $imgdata64;
         }
         $templatecontext['html'] = $html;
-        $templatecontext['styles'] = 'page-break-after: always; width: 100%; height: 100vh;';
+        $height = (empty(get_config('backgroundimage_height', 'quiz_archiver'))) ? '1000px'
+            : get_config('backgroundimage_height', 'quiz_archiver');
+        $templatecontext['styles'] = 'page-break-after: always; height: ' . $height . ';';
 
         $html = $OUTPUT->render_from_template('quiz_archiver/pdfcoversheet_html_sceleton', $templatecontext);
-        // $html = '<div style="' . join(' ', $styles) . '">' . $html . '</div>';
         return $html;
     }
 
@@ -158,7 +159,7 @@ class create_coversheet {
         foreach ($basenames as $basename) {
             $active = '';
             $show = '';
-            if($i == 1) {
+            if ($i == 1) {
                 $show = 'show';
                 $active = 'active';
             }
