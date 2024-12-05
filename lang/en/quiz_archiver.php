@@ -84,6 +84,26 @@ $string['export_report_section_attachments_help'] = 'Include all file attachment
 $string['job_overview'] = 'Archives';
 $string['num_attempts'] = 'Number of attempts';
 
+// Language strings for pdf cover sheet.
+$string['common'] = 'Common';
+$string['course'] = 'Course';
+$string['dateformat'] = 'd/m/Y';
+$string['define_pdfcoversheet'] = 'Define Cover Sheet';
+$string['enable_pdf_coversheet'] = 'Ad PDF cover sheet';
+$string['enable_pdf_coversheet_help'] = 'Add a cover sheet to the attempts pdf';
+$string['exiting_placeholders'] = 'Possible Placeholders';
+$string['exiting_placeholders_desc'] = 'You can use the placeholder by writing {{placeholder}} e.g. {{profile_userfullname}} to the template above.';
+$string['pdf_coversheet_backgroundimage'] = 'Cover Sheet Background Image';
+$string['pdf_coversheet_backgroundimage_desc'] = 'The background image should have the desired page format.';
+$string['pdf_coversheet_html_area'] = 'Coversheet dynamic content';
+$string['pdf_coversheet_html_area_help'] = 'Use placeholders for dynamic cover sheet contents';
+$string['pdfcoversheet_heading'] = 'PDF Cover Sheet';
+$string['pdfcoversheet_settings'] = 'PDF Cover Sheet';
+$string['pdfcoversheet_settings_desc'] = 'Define a default cover sheet';
+$string['profile'] = 'Profile';
+$string['setting_backgroundimage_height'] = 'Backgroundimage Height';
+$string['setting_backgroundimage_height_desc'] = 'The height of the backgroundimage. If this setting is to big, the coversheet may be split up into two pages.';
+
 // Job creation form: Filename pattern
 $string['archive_filename_pattern'] = 'Archive name';
 $string['archive_filename_pattern_help'] = 'Name of the generated quiz archive. Variables <b>must</b> follow the <code>${variablename}</code> pattern. The file extension will be added automatically.<br><br><b>Available variables</b>: <ul>{$a->variables}</ul><b>Forbidden characters</b>: <code>{$a->forbiddenchars}</code>';

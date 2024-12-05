@@ -28,6 +28,7 @@ use quiz_archiver\local\admin\setting\admin_setting_archive_filename_pattern;
 use quiz_archiver\local\admin\setting\admin_setting_attempt_filename_pattern;
 use quiz_archiver\local\admin\setting\admin_setting_configcheckbox_alwaystrue;
 use quiz_archiver\Report;
+use quiz_archiver\local\admin\setting\setting_button;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -194,6 +195,48 @@ if ($hassiteconfig) {
         $set->set_locked_flag_options(admin_setting_flag::ENABLED, true);
         $set->add_dependent_on('quiz_archiver/job_preset_archive_autodelete');
         $settings->add($set);
+
+        $settings->add(new admin_setting_heading(
+            'quit_archiver/pdfcoversheet_settings',
+            get_string('pdfcoversheet_settings', 'quiz_archiver'),
+            get_string('pdfcoversheet_settings_desc', 'quiz_archiver')
+        ));
+
+        $settings->add(new admin_setting_configcheckbox(
+            'quiz_archiver/enable_pdf_coversheet',
+            get_string('enable_pdf_coversheet', 'quiz_archiver'),
+            get_string('enable_pdf_coversheet_help', 'quiz_archiver'),
+            '0',
+        ));
+
+        // PDF cover sheet backround image.
+        $settings->add(new admin_setting_configstoredfile(
+            'quiz_archiver/pdfcoversheetbackgroundimage',
+            get_string('pdf_coversheet_backgroundimage', 'quiz_archiver'),
+            get_string('pdf_coversheet_backgroundimage_desc', 'quiz_archiver'),
+            'pdfcoversheetbackgroundimage',
+            0,
+            ['maxfiles' => 1, 'accepted_types' => ['.png', '.jpg']]
+        ));
+
+        $settings->add(new admin_setting_configtext(
+            'quiz_archiver/backgroundimage_height',
+            get_string('setting_backgroundimage_height', 'quiz_archiver'),
+            get_string('setting_backgroundimage_height_desc', 'quiz_archiver'),
+            '1000px',
+            PARAM_ALPHANUM
+        ));
+
+        $settings->add(
+            new setting_button(
+                'quiz_archiver/pdfcoversheet_settings',
+                get_string('pdfcoversheet_settings', 'quiz_archiver'),
+                '',
+                get_string('define_pdfcoversheet', 'quiz_archiver'),
+                $CFG->wwwroot . '/mod/quiz/report/archiver/settings_coversheet.php',
+                "btn btn-primary"
+            ),
+        );
 
         // Time-Stamp Protocol settings
         $settings->add(new admin_setting_heading('quit_archiver/header_tsp',

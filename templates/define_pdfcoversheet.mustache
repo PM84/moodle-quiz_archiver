@@ -1,0 +1,67 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template quiz_archiver/define_pdfcoversheet
+
+    Admin text setting template to define a dynamic pdf cover sheet.
+
+    Context variables required for this template:
+    * label - form element name
+    * href - element id
+    * forceltr - always display as ltr
+
+    Example context (json):
+    {
+        "storedhtml": HTML Code,
+    }
+}}
+
+<div>
+  <form method="POST">
+    <div class="mb-3">
+      <label for="dynamic_pdf_content" class="form-label">{{#str}} pdf_coversheet_html_area, quiz_archiver {{/str}}</label>
+      <textarea class="form-control" id="dynamic_pdf_content" name='dynamic_pdf_content' rows="20" placeholder="<h2>EXAMPLE</h2>
+<p>This is an example, and will not be present in the PDF.</p>">{{{storedhtml}}}</textarea>
+    </div>
+    <div>
+      <h4>{{#str}}exiting_placeholders, quiz_archiver{{/str}}</h4>
+      <p>{{#str}}exiting_placeholders_desc, quiz_archiver{{/str}}</p>
+
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        {{#placeholderdata}}
+        <li class="nav-item" role="presentation">
+          <button class="nav-link {{metadata.active}}" data-toggle="tab" id='nav-{{metadata.tabid}}' data-target="#{{metadata.tabid}}"
+          type="button" role="tab" aria-controls="{{metadata.tabid}}">{{metadata.tab}}</button>
+        </li>
+        {{/placeholderdata}}
+      </ul>
+      <div class="tab-content" id="myTabContent">
+        {{#placeholderdata}}
+        <div class="tab-pane fade {{metadata.show}} {{metadata.active}}" id="{{metadata.tabid}}" role="tabpanel" aria-labelledby="nav-{{metadata.tabid}}">
+          <ul>
+            {{#placeholders}}
+            <li>{{.}}</li>
+            {{/placeholders}}
+          </ul>
+        </div>
+        {{/placeholderdata}}
+      </div>
+      </div>
+      <hr>
+    <button class="btn btn-primary" name="action" value="storecoversheet" type="submit">{{#str}} save {{/str}}</button>
+  </form>
+</div>

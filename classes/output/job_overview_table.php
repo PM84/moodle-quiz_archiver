@@ -89,6 +89,7 @@ class job_overview_table extends \table_sql {
         $this->sortable(true, 'timecreated', SORT_DESC);
         $this->no_sorting('jobid');
         $this->no_sorting('actions');
+        $this->no_sorting('user');
         $this->collapsible(false);
     }
 
