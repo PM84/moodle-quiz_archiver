@@ -16,13 +16,18 @@
 
 namespace quiz_archiver\local\admin\setting;
 
+// @codingStandardsIgnoreLine
+defined('MOODLE_INTERNAL') || die(); // @codeCoverageIgnore
+
 
 /**
  * Custom read-only admin setting checkbox that is always checked
  *
+ * @codeCoverageIgnore
+ *
  * @package   quiz_archiver
  * @copyright 2024 Niels Gandraß <niels@gandrass.de>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
+ * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class admin_setting_configcheckbox_alwaystrue extends \admin_setting_configcheckbox {
 

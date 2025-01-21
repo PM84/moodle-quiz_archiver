@@ -24,12 +24,19 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-if ($CFG->branch <= 401) {
-    require_once($CFG->dirroot . '/mod/quiz/locallib.php');
+// @codingStandardsIgnoreLine
+defined('MOODLE_INTERNAL') || die(); // @codeCoverageIgnore
 
-    // Patch renamed classes
+
+global $CFG;
+
+if ($CFG->branch <= 401) {
+    require_once($CFG->dirroot.'/mod/quiz/locallib.php');
+    require_once($CFG->dirroot.'/lib/external/externallib.php');
+
+    // Patch renamed classes.
     foreach ([
-        // External API
+        // External API.
         'external_api' => 'core_external\external_api',
         'external_description' => 'core_external\external_description',
         'external_files' => 'core_external\files',
@@ -43,7 +50,7 @@ if ($CFG->branch <= 401) {
         'external_warnings' => 'core_external\external_warnings',
         'restricted_context_exception' => 'core_external\restricted_context_exception',
 
-        // mod_quiz
+        // Module: mod_quiz.
         'quiz_default_report' => 'mod_quiz\local\reports\report_base',
         'quiz_attempt' => 'mod_quiz\quiz_attempt',
         'mod_quiz_display_options' => 'mod_quiz\question\display_options',
