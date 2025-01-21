@@ -28,9 +28,10 @@ use curl;
 use mod_quiz\quiz_attempt;
 
 // @codingStandardsIgnoreLine
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die(); // @codeCoverageIgnore
 
-require_once("$CFG->dirroot/mod/quiz/locallib.php");  // Required for legacy mod_quiz functions ...
+// Required for legacy mod_quiz functions ...
+require_once("$CFG->dirroot/mod/quiz/locallib.php");  // @codeCoverageIgnore
 
 
 /**
@@ -168,7 +169,7 @@ class Report {
         // Get all requested attempts.
         return $DB->get_records_sql(
             "SELECT qa.id AS attemptid, qa.userid, qa.attempt, qa.state, qa.timestart, qa.timefinish, ".
-            "       u.username, u.firstname, u.lastname ".
+            "       u.username, u.firstname, u.lastname, u.idnumber ".
             "FROM {quiz_attempts} qa LEFT JOIN {user} u ON qa.userid = u.id ".
             "WHERE qa.preview = 0 AND qa.quiz = :quizid " . ($filterwhereclause ?? ''),
             [
@@ -392,17 +393,26 @@ class Report {
 
         // Section: Quiz header.
         if ($sections['header']) {
-
             $quizheaderdata = [];
+
+            // User name and link.
             $attemptuser = $DB->get_record('user', ['id' => $attemptobj->get_userid()]);
             $userpicture = new \user_picture($attemptuser);
             $userpicture->courseid = $attemptobj->get_courseid();
+            $userlink = new \action_link(
+                new \moodle_url('/user/view.php', ['id' => $attemptuser->id, 'course' => $attemptobj->get_courseid()]),
+                fullname($attemptuser, true)
+            );
+            global $OUTPUT;
             $quizheaderdata['user'] = [
-                'title' => $userpicture,
-                'content' => new \action_link(
-                    new \moodle_url('/user/view.php', ['id' => $attemptuser->id, 'course' => $attemptobj->get_courseid()]),
-                    fullname($attemptuser, true)
-                ),
+                'title' => get_string('user'),
+                'content' => $OUTPUT->render($userpicture) . '&nbsp;' . $OUTPUT->render($userlink),
+            ];
+
+            // User ID number.
+            $quizheaderdata['useridnumber'] = [
+                'title' => get_string('idnumber'),
+                'content' => $attemptuser->idnumber ?: '<i>'.get_string('none').'</i>',
             ];
 
             // Quiz metadata.
@@ -493,7 +503,7 @@ class Report {
                 $feedback = $attemptobj->get_overall_feedback($grade);
                 $quizheaderdata['feedback'] = [
                     'title' => get_string('feedback', 'quiz'),
-                    'content' => $feedback,
+                    'content' => $feedback ?: '<i>'.get_string('none').'</i>',
                 ];
             }
 
@@ -704,7 +714,7 @@ class Report {
         }
 
         // Only process allowed image types.
-        $imgext = pathinfo($imgsrcurl, PATHINFO_EXTENSION);
+        $imgext = strtolower(pathinfo($imgsrcurl, PATHINFO_EXTENSION));
         if (!array_key_exists($imgext, self::ALLOWED_IMAGE_TYPES)) {
             // Edge case: Moodle theme images must not always contain extensions.
             if (!preg_match(self::REGEX_MOODLE_URL_THEME_IMAGE, $imgsrcurl)) {

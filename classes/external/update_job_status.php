@@ -24,10 +24,11 @@
 
 namespace quiz_archiver\external;
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die(); // @codeCoverageIgnore
+
 
 // TODO (MDL-0): Remove after deprecation of Moodle 4.1 (LTS) on 08-12-2025.
-require_once($CFG->dirroot.'/mod/quiz/report/archiver/patch_401_class_renames.php');
+require_once($CFG->dirroot.'/mod/quiz/report/archiver/patch_401_class_renames.php'); // @codeCoverageIgnore
 
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -56,6 +57,11 @@ class update_job_status extends external_api {
                 'New status to set for job with UUID of jobid',
                 VALUE_REQUIRED
             ),
+            'statusextras' => new external_value(
+                PARAM_RAW,
+                'JSON containing additional information for the new job status',
+                VALUE_DEFAULT
+            ),
         ]);
     }
 
@@ -77,19 +83,22 @@ class update_job_status extends external_api {
      *
      * @param string $jobidraw
      * @param string $statusraw
+     * @param string|null $statusextrasraw
      * @return array
+     * @throws \coding_exception
      * @throws \invalid_parameter_exception
      * @throws \required_capability_exception
-     * @throws \coding_exception
      */
     public static function execute(
         string $jobidraw,
-        string $statusraw
+        string $statusraw,
+        ?string $statusextrasraw = null
     ): array {
         // Validate request.
         $params = self::validate_parameters(self::execute_parameters(), [
             'jobid' => $jobidraw,
             'status' => $statusraw,
+            'statusextras' => $statusextrasraw,
         ]);
 
         try {
@@ -111,10 +120,24 @@ class update_job_status extends external_api {
                 ];
             }
 
-            $job->set_status($params['status']);
+            // Prepare statusextras.
+            $statusextras = null;
+            if ($params['statusextras']) {
+                $statusextras = json_decode($params['statusextras'], true, 16, JSON_THROW_ON_ERROR);
+            }
+
+            // Update job status.
+            $job->set_status(
+                $params['status'],
+                $statusextras
+            );
         } catch (\dml_exception $e) {
             return [
                 'status' => 'E_UPDATE_FAILED',
+            ];
+        } catch (\JsonException $e) {
+            return [
+                'status' => 'E_INVALID_STATUSEXTRAS_JSON',
             ];
         }
 

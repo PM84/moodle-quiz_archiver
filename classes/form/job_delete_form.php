@@ -26,9 +26,10 @@ namespace quiz_archiver\form;
 
 use quiz_archiver\ArchiveJob;
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die(); // @codeCoverageIgnore
 
-require_once($CFG->dirroot.'/lib/formslib.php');
+
+require_once($CFG->dirroot.'/lib/formslib.php'); // @codeCoverageIgnore
 
 
 /**
@@ -43,6 +44,7 @@ class job_delete_form extends \moodleform {
      * @throws \coding_exception
      */
     public function definition() {
+        global $OUTPUT;
         $mform = $this->_form;
 
         // Find job.
@@ -74,14 +76,11 @@ class job_delete_form extends \moodleform {
         }
 
         // Print warning element.
-        $mform->addElement('html', <<<EOD
-            <div class="alert alert-warning" role="alert">
-                <h4>$warnhead</h4>
-                $warnmsg
-                <hr/>
-                $warndetails
-            </div>
-        EOD);
+        $mform->addElement('html', $OUTPUT->notification(
+            "<h4>$warnhead</h4> $warnmsg <hr/> $warndetails",
+            \core\output\notification::NOTIFY_WARNING,
+            false,
+        ));
 
         // Preserve internal information of mod_quiz.
         $mform->addElement('hidden', 'id', $this->optional_param('id', null, PARAM_INT));

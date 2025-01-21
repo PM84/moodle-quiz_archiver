@@ -24,34 +24,21 @@
 
 namespace quiz_archiver\external;
 
+use quiz_archiver\ArchiveJob;
+
 /**
  * Tests for the get_attempts_metadata external service
  */
 final class get_attempts_metadata_test extends \advanced_testcase {
 
     /**
-     * Generates a mock quiz to use in the tests
+     * Returns the data generator for the quiz_archiver plugin
      *
-     * @return \stdClass Created mock objects
+     * @return \quiz_archiver_generator The data generator for the quiz_archiver plugin
      */
-    protected function generate_mock_quiz(): \stdClass {
-        // Create course, course module and quiz.
-        $this->resetAfterTest();
-
-        // Prepare user and course.
-        $user = $this->getDataGenerator()->create_user();
-        $course = $this->getDataGenerator()->create_course();
-        $quiz = $this->getDataGenerator()->create_module('quiz', [
-            'course' => $course->id,
-            'grade' => 100.0,
-            'sumgrades' => 100,
-        ]);
-
-        return (object)[
-            'user' => $user,
-            'course' => $course,
-            'quiz' => $quiz,
-        ];
+    // @codingStandardsIgnoreLine
+    public static function getDataGenerator(): \quiz_archiver_generator {
+        return parent::getDataGenerator()->get_plugin_generator('quiz_archiver');
     }
 
     /**
@@ -72,6 +59,37 @@ final class get_attempts_metadata_test extends \advanced_testcase {
     }
 
     /**
+     * Tests that the parameter spec is specified correctly and produces no exception.
+     *
+     * @covers \quiz_archiver\external\get_attempts_metadata::execute_parameters
+     *
+     * @return void
+     */
+    public function test_assure_execute_parameter_spec(): void {
+        $this->resetAfterTest();
+        $this->assertInstanceOf(
+            \core_external\external_function_parameters::class,
+            get_attempts_metadata::execute_parameters(),
+            'The execute_parameters() method should return an external_function_parameters.'
+        );
+    }
+
+    /**
+     * Tests that the return parameters are specified correctly and produce no exception.
+     *
+     * @covers \quiz_archiver\external\get_attempts_metadata::execute_returns
+     *
+     * @return void
+     */
+    public function test_assure_return_parameter_spec(): void {
+        $this->assertInstanceOf(
+            \core_external\external_description::class,
+            get_attempts_metadata::execute_returns(),
+            'The execute_returns() method should return an external_description.'
+        );
+    }
+
+    /**
      * Test that users without the required capabilities are rejected
      *
      * @covers \quiz_archiver\external\get_attempts_metadata::execute
@@ -85,7 +103,8 @@ final class get_attempts_metadata_test extends \advanced_testcase {
         $this->expectException(\required_capability_exception::class);
         $this->expectExceptionMessageMatches('/.*mod\/quiz_archiver:use_webservice.*/');
 
-        $mocks = $this->generate_mock_quiz();
+        $this->resetAfterTest();
+        $mocks = $this->getDataGenerator()->create_mock_quiz();
         $r = $this->generate_valid_request($mocks->course->id, $mocks->quiz->cmid, $mocks->quiz->id);
         get_attempts_metadata::execute(
             $r['courseid'],
@@ -96,36 +115,143 @@ final class get_attempts_metadata_test extends \advanced_testcase {
     }
 
     /**
-     * Verifies webservice parameter validation
+     * Tests that only web service tokens with read access to a job can request
+     * attempt metadata
      *
-     * @dataProvider parameter_data_provider
      * @covers \quiz_archiver\external\get_attempts_metadata::execute
      *
-     * @param int $courseid Course ID
-     * @param int $cmid Course module ID
-     * @param int $quizid Quiz ID
-     * @param array $attemptids Array of attempt IDs
-     * @param bool $shouldfail Whether a failure is expected
      * @return void
+     * @throws \coding_exception
+     * @throws \dml_exception
+     * @throws \invalid_parameter_exception
+     * @throws \moodle_exception
+     * @throws \required_capability_exception
+     */
+    public function test_wstoken_write_access_check(): void {
+        // Create job.
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $mocks = $this->getDataGenerator()->create_mock_quiz();
+        ArchiveJob::create(
+            '11000000-1234-5678-abcd-ef4242424242',
+            $mocks->course->id,
+            $mocks->quiz->cmid,
+            $mocks->quiz->id,
+            $mocks->user->id,
+            null,
+            'TEST-WS-TOKEN',
+            [],
+            []
+        );
+
+        // Execute test call.
+        $_GET['wstoken'] = 'INVALID-WS-TOKEN';
+        $r = $this->generate_valid_request($mocks->course->id, $mocks->quiz->cmid, $mocks->quiz->id);
+        $res = get_attempts_metadata::execute(
+            $r['courseid'],
+            $r['cmid'],
+            $r['quizid'],
+            $r['attemptids'],
+        );
+
+        // Ensure that the access was denied.
+        $this->assertSame(['status' => 'E_ACCESS_DENIED'], $res, 'Websertice token without access rights was falsely accepted');
+    }
+
+    /**
+     * Test web service part of processing of a valid request
+     *
+     * @covers \quiz_archiver\external\get_attempts_metadata::execute
+     *
+     * @return void
+     * @throws \coding_exception
+     * @throws \dml_exception
+     * @throws \dml_transaction_exception
      * @throws \moodle_exception
      */
-    public function test_parameter_validation(
-        int $courseid,
-        int $cmid,
-        int $quizid,
-        array $attemptids,
-        bool $shouldfail
-    ): void {
-        if ($shouldfail) {
-            $this->expectException(\invalid_parameter_exception::class);
-        }
+    public function test_execute(): void {
+        // Create mock quiz and archive job.
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $mocks = $this->getDataGenerator()->create_mock_quiz();
+        $jobid = '10000000-0000-0000-0000-0123456789ab';
+        $wstoken = 'TEST-WS-TOKEN-1';
+        ArchiveJob::create(
+            $jobid,
+            $mocks->course->id,
+            $mocks->quiz->cmid,
+            $mocks->quiz->id,
+            $mocks->user->id,
+            null,
+            'TEST-WS-TOKEN-1',
+            $mocks->attempts,
+            $mocks->settings
+        );
 
-        try {
-            get_attempts_metadata::execute($courseid, $cmid, $quizid, $attemptids);
-        // @codingStandardsIgnoreLine
-        } catch (\dml_exception $e) {
-            // Ignore.
-        }
+        // Create a valid request.
+        $r = $this->generate_valid_request($mocks->course->id, $mocks->quiz->cmid, $mocks->quiz->id);
+        $_GET['wstoken'] = $wstoken;
+
+        // Execute the request.
+        $res = get_attempts_metadata::execute(
+            $r['courseid'],
+            $r['cmid'],
+            $r['quizid'],
+            $r['attemptids'],
+        );
+        $this->assertSame('OK', $res['status'], 'The status should be OK.');
+        $this->assertArrayHasKey('attempts', $res, 'The response should contain an attempts key.');
+    }
+
+    /**
+     * Verifies webservice parameter validation
+     *
+     * @dataProvider parameter_validation_data_provider
+     * @covers \quiz_archiver\external\get_attempts_metadata::execute
+     * @covers \quiz_archiver\external\get_attempts_metadata::validate_parameters
+     *
+     * @param string $invalidparameterkey Key of the parameter to invalidate
+     * @return void
+     * @throws \dml_exception
+     * @throws \dml_transaction_exception
+     * @throws \moodle_exception
+     */
+    public function test_parameter_validation(string $invalidparameterkey): void {
+        // Create mock quiz and archive job.
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $mocks = $this->getDataGenerator()->create_mock_quiz();
+        $jobid = '20000000-0000-0000-0000-0123456789ab';
+        $wstoken = 'TEST-WS-TOKEN-2';
+        ArchiveJob::create(
+            $jobid,
+            $mocks->course->id,
+            $mocks->quiz->cmid,
+            $mocks->quiz->id,
+            $mocks->user->id,
+            null,
+            'TEST-WS-TOKEN-2',
+            $mocks->attempts,
+            $mocks->settings
+        );
+
+        // Create a request.
+        $r = $this->generate_valid_request(
+            $mocks->course->id,
+            $mocks->quiz->cmid,
+            $mocks->quiz->id
+        );
+        $_GET['wstoken'] = $wstoken;
+
+        // Execute the request.
+        $this->expectException(\invalid_parameter_exception::class);
+        $this->expectExceptionMessageMatches('/.*'.$invalidparameterkey.'.*/');
+        get_attempts_metadata::execute(
+            $invalidparameterkey == 'courseid' ? 0 : $r['courseid'],
+            $invalidparameterkey == 'cmid' ? 0 : $r['cmid'],
+            $invalidparameterkey == 'quizid' ? 0 : $r['quizid'],
+            $r['attemptids']
+        );
     }
 
     /**
@@ -133,14 +259,11 @@ final class get_attempts_metadata_test extends \advanced_testcase {
      *
      * @return array[] Test data
      */
-    public static function parameter_data_provider(): array {
-        $self = new self();
-        $mocks = $self->generate_mock_quiz();
-        $base = $self->generate_valid_request($mocks->course->id, $mocks->quiz->cmid, $mocks->quiz->id, 1);
+    public static function parameter_validation_data_provider(): array {
         return [
-            'Valid' => array_merge($base, ['shouldfail' => false]),
-            'Invalid attemptids (simple)' => array_merge($base, ['attemptids' => ['a'], 'shouldfail' => true]),
-            'Invalid attemptids (mixed)' => array_merge($base, ['attemptids' => [1, 2, 3, 4, 5, 'a'], 'shouldfail' => true]),
+            'Invalid courseid' => ['courseid'],
+            'Invalid cmid' => ['cmid'],
+            'Invalid quizid' => ['quizid'],
         ];
     }
 

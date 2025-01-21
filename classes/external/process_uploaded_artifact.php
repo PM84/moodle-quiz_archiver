@@ -24,10 +24,11 @@
 
 namespace quiz_archiver\external;
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die(); // @codeCoverageIgnore
+
 
 // TODO (MDL-0): Remove after deprecation of Moodle 4.1 (LTS) on 08-12-2025.
-require_once($CFG->dirroot.'/mod/quiz/report/archiver/patch_401_class_renames.php');
+require_once($CFG->dirroot.'/mod/quiz/report/archiver/patch_401_class_renames.php'); // @codeCoverageIgnore
 
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -199,10 +200,14 @@ class process_uploaded_artifact extends external_api {
             ];
         }
 
+        // The following code is tested covered by more specific tests.
+        // @codingStandardsIgnoreLine
+        // @codeCoverageIgnoreStart
+
         // Store uploaded file.
         $fm = new FileManager($job->get_courseid(), $job->get_cmid(), $job->get_quizid());
         try {
-            $artifact = $fm->store_uploaded_artifact($draftfile);
+            $artifact = $fm->store_uploaded_artifact($draftfile, $job->get_id());
             $job->link_artifact($artifact->get_id(), $params['artifact_sha256sum']);
         } catch (\Exception $e) {
             $job->set_status(ArchiveJob::STATUS_FAILED);
@@ -233,6 +238,9 @@ class process_uploaded_artifact extends external_api {
         return [
             'status' => 'OK',
         ];
+
+        // @codingStandardsIgnoreLine
+        // @codeCoverageIgnoreEnd
     }
 
 }

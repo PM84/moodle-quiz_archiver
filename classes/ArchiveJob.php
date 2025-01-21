@@ -27,7 +27,8 @@ namespace quiz_archiver;
 use quiz_archiver\local\util;
 
 // @codingStandardsIgnoreLine
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die(); // @codeCoverageIgnore
+
 
 
 /**
@@ -75,6 +76,10 @@ class ArchiveJob {
     const STATUS_AWAITING_PROCESSING = 'AWAITING_PROCESSING';
     /** @var string Job status: Running */
     const STATUS_RUNNING = 'RUNNING';
+    /** @var string Job status: Waiting for backup */
+    const STATUS_WAITING_FOR_BACKUP = 'WAITING_FOR_BACKUP';
+    /** @var string Job status: Finalizing */
+    const STATUS_FINALIZING = 'FINALIZING';
     /** @var string Job status: Finished */
     const STATUS_FINISHED = 'FINISHED';
     /** @var string Job status: Failed */
@@ -109,6 +114,7 @@ class ArchiveJob {
         'username',
         'firstname',
         'lastname',
+        'idnumber',
         'timestart',
         'timefinish',
         'date',
@@ -451,7 +457,10 @@ class ArchiveJob {
                 'id' => $j->id,
                 'jobid' => $j->jobid,
                 'status' => $j->status,
-                'status_display_args' => self::get_status_display_args($j->status),
+                'status_display_args' => self::get_status_display_args(
+                    $j->status,
+                    $j->statusextras ? json_decode($j->statusextras, true) : null
+                ),
                 'timecreated' => $j->timecreated,
                 'timemodified' => $j->timemodified,
                 'retentiontime' => $j->retentiontime,
@@ -685,6 +694,7 @@ class ArchiveJob {
      * Updates the status of this ArchiveJob
      *
      * @param string $status New job status
+     * @param array|null $statusextras Optional additional status information
      * @param bool $deletewstokenifcompleted If true, delete associated wstoken
      * if this status change completed the job
      * @param bool $deletetemporaryfilesifcompleted If true, all linked
@@ -694,16 +704,27 @@ class ArchiveJob {
      */
     public function set_status(
         string $status,
+        ?array $statusextras = null,
         bool   $deletewstokenifcompleted = true,
         bool   $deletetemporaryfilesifcompleted = true
     ): void {
         global $DB;
+
+        // Prepare statusextras data.
+        $statusextrasjson = null;
+        if ($statusextras !== null) {
+            $statusextrasjson = json_encode($statusextras);
+        }
+
+        // Update status in database.
         $DB->update_record(self::JOB_TABLE_NAME, (object) [
             'id' => $this->id,
             'status' => $status,
+            'statusextras' => $statusextrasjson,
             'timemodified' => time(),
         ]);
 
+        // Handle post status change actions.
         if ($this->is_complete()) {
             if ($deletewstokenifcompleted) {
                 $this->delete_webservice_token();
@@ -730,33 +751,114 @@ class ArchiveJob {
     }
 
     /**
+     * Retrieves the statusextras of this job
+     *
+     * @return array|null Additional status information of this job, if available
+     */
+    public function get_statusextras(): ?array {
+        global $DB;
+        try {
+            $statusextras = $DB->get_field(self::JOB_TABLE_NAME, 'statusextras', ['jobid' => $this->jobid], MUST_EXIST);
+            if ($statusextras) {
+                return json_decode($statusextras, true);
+            } else {
+                return null;
+            }
+        } catch (\dml_exception $e) {
+            return null;
+        }
+    }
+
+    /**
      * Returns the status indicator display arguments based on the given job status
      *
      * @param string $status JOB_STATUS value to convert
+     * @param array|null $statusextras Additional status information to display
      * @return array Status of this job, translated for display
      * @throws \coding_exception
      */
-    public static function get_status_display_args(string $status): array {
+    public static function get_status_display_args(string $status, ?array $statusextras = null): array {
+        // Translate status to display text and color.
         switch ($status) {
             case self::STATUS_UNKNOWN:
-                return ['color' => 'warning', 'text' => get_string('job_status_UNKNOWN', 'quiz_archiver')];
+                $res = [
+                    'color' => 'warning',
+                    'text' => get_string('job_status_UNKNOWN', 'quiz_archiver'),
+                    'help' => get_string('job_status_UNKNOWN_help', 'quiz_archiver'),
+                ];
+                break;
             case self::STATUS_UNINITIALIZED:
-                return ['color' => 'secondary', 'text' => get_string('job_status_UNINITIALIZED', 'quiz_archiver')];
+                $res = [
+                    'color' => 'secondary',
+                    'text' => get_string('job_status_UNINITIALIZED', 'quiz_archiver'),
+                    'help' => get_string('job_status_UNINITIALIZED_help', 'quiz_archiver'),
+                ];
+                break;
             case self::STATUS_AWAITING_PROCESSING:
-                return ['color' => 'secondary', 'text' => get_string('job_status_AWAITING_PROCESSING', 'quiz_archiver')];
+                $res = [
+                    'color' => 'secondary',
+                    'text' => get_string('job_status_AWAITING_PROCESSING', 'quiz_archiver'),
+                    'help' => get_string('job_status_AWAITING_PROCESSING_help', 'quiz_archiver'),
+                ];
+                break;
             case self::STATUS_RUNNING:
-                return ['color' => 'primary', 'text' => get_string('job_status_RUNNING', 'quiz_archiver')];
+                $res = [
+                    'color' => 'primary',
+                    'text' => get_string('job_status_RUNNING', 'quiz_archiver'),
+                    'help' => get_string('job_status_RUNNING_help', 'quiz_archiver'),
+                ];
+                break;
+            case self::STATUS_WAITING_FOR_BACKUP:
+                $res = [
+                    'color' => 'info',
+                    'text' => get_string('job_status_WAITING_FOR_BACKUP', 'quiz_archiver'),
+                    'help' => get_string('job_status_WAITING_FOR_BACKUP_help', 'quiz_archiver'),
+                ];
+                break;
+            case self::STATUS_FINALIZING:
+                $res = [
+                    'color' => 'info',
+                    'text' => get_string('job_status_FINALIZING', 'quiz_archiver'),
+                    'help' => get_string('job_status_FINALIZING_help', 'quiz_archiver'),
+                ];
+                break;
             case self::STATUS_FINISHED:
-                return ['color' => 'success', 'text' => get_string('job_status_FINISHED', 'quiz_archiver')];
+                $res = [
+                    'color' => 'success',
+                    'text' => get_string('job_status_FINISHED', 'quiz_archiver'),
+                    'help' => get_string('job_status_FINISHED_help', 'quiz_archiver'),
+                ];
+                break;
             case self::STATUS_FAILED:
-                return ['color' => 'danger', 'text' => get_string('job_status_FAILED', 'quiz_archiver')];
+                $res = [
+                    'color' => 'danger',
+                    'text' => get_string('job_status_FAILED', 'quiz_archiver'),
+                    'help' => get_string('job_status_FAILED_help', 'quiz_archiver'),
+                ];
+                break;
             case self::STATUS_TIMEOUT:
-                return ['color' => 'danger', 'text' => get_string('job_status_TIMEOUT', 'quiz_archiver')];
+                $res = [
+                    'color' => 'danger',
+                    'text' => get_string('job_status_TIMEOUT', 'quiz_archiver'),
+                    'help' => get_string('job_status_TIMEOUT_help', 'quiz_archiver'),
+                ];
+                break;
             case self::STATUS_DELETED:
-                return ['color' => 'secondary', 'text' => get_string('job_status_DELETED', 'quiz_archiver')];
+                $res = [
+                    'color' => 'secondary',
+                    'text' => get_string('job_status_DELETED', 'quiz_archiver'),
+                    'help' => get_string('job_status_DELETED_help', 'quiz_archiver'),
+                ];
+                break;
             default:
-                return ['color' => 'light', 'text' => $status];
+                $res = ['color' => 'light', 'text' => $status, 'help' => $status];
+                break;
         }
+
+        // Add additional status information if present.
+        $res['statusextras'] = $statusextras ?? [];
+
+        return $res;
     }
 
     /**
@@ -1117,6 +1219,7 @@ class ArchiveJob {
             'username' => $userinfo->username,
             'firstname' => $userinfo->firstname,
             'lastname' => $userinfo->lastname,
+            'idnumber' => $userinfo->idnumber,
         ];
 
         // Substitute variables.

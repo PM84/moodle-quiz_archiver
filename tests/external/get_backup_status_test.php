@@ -33,28 +33,13 @@ use quiz_archiver\ArchiveJob;
 final class get_backup_status_test extends \advanced_testcase {
 
     /**
-     * Generates a mock quiz to use in the tests
+     * Returns the data generator for the quiz_archiver plugin
      *
-     * @return \stdClass Created mock objects
+     * @return \quiz_archiver_generator The data generator for the quiz_archiver plugin
      */
-    protected function generate_mock_quiz(): \stdClass {
-        // Create course, course module and quiz.
-        $this->resetAfterTest();
-
-        // Prepare user and course.
-        $user = $this->getDataGenerator()->create_user();
-        $course = $this->getDataGenerator()->create_course();
-        $quiz = $this->getDataGenerator()->create_module('quiz', [
-            'course' => $course->id,
-            'grade' => 100.0,
-            'sumgrades' => 100,
-        ]);
-
-        return (object)[
-            'user' => $user,
-            'course' => $course,
-            'quiz' => $quiz,
-        ];
+    // @codingStandardsIgnoreLine
+    public static function getDataGenerator(): \quiz_archiver_generator {
+        return parent::getDataGenerator()->get_plugin_generator('quiz_archiver');
     }
 
     /**
@@ -69,7 +54,8 @@ final class get_backup_status_test extends \advanced_testcase {
      */
     public function test_capability_requirement(): void {
         // Create job.
-        $mocks = $this->generate_mock_quiz();
+        $this->resetAfterTest();
+        $mocks = $this->getDataGenerator()->create_mock_quiz();
         $job = ArchiveJob::create(
             '10000000-1234-5678-abcd-ef4242424242',
             $mocks->course->id,
@@ -89,49 +75,64 @@ final class get_backup_status_test extends \advanced_testcase {
         get_backup_status::execute($job->get_jobid(), 'f1d2d2f924e986ac86fdf7b36c94bcdf32beec15');
     }
 
+    /**
+     * Tests that the parameter spec is specified correctly and produces no exception.
+     *
+     * @covers \quiz_archiver\external\get_backup_status::execute_parameters
+     *
+     * @return void
+     */
+    public function test_assure_execute_parameter_spec(): void {
+        $this->resetAfterTest();
+        $this->assertInstanceOf(
+            \core_external\external_function_parameters::class,
+            get_backup_status::execute_parameters(),
+            'The execute_parameters() method should return an external_function_parameters.'
+        );
+    }
+
+    /**
+     * Tests that the return parameters are specified correctly and produce no exception.
+     *
+     * @covers \quiz_archiver\external\get_backup_status::execute_returns
+     *
+     * @return void
+     */
+    public function test_assure_return_parameter_spec(): void {
+        $this->assertInstanceOf(
+            \core_external\external_description::class,
+            get_backup_status::execute_returns(),
+            'The execute_returns() method should return an external_description.'
+        );
+    }
 
     /**
      * Verifies webservice parameter validation
      *
      * @dataProvider parameter_data_provider
-     * @covers \quiz_archiver\external\get_backup_status::execute
+     * @covers       \quiz_archiver\external\get_backup_status::execute
+     * @covers       \quiz_archiver\external\get_backup_status::validate_parameters
      *
-     * @param string $jobid Job ID
-     * @param string $backupid Backup ID
+     * @param string|null $jobid Job ID to check
+     * @param string|null $backupid Backup ID to check
      * @param bool $shouldfail Whether a failure is expected
      * @return void
      * @throws \coding_exception
+     * @throws \dml_exception
      * @throws \invalid_parameter_exception
      * @throws \required_capability_exception
      */
     public function test_parameter_validation(
-        string $jobid,
-        string $backupid,
-        bool   $shouldfail
+        ?string $jobid,
+        ?string $backupid,
+        bool    $shouldfail
     ): void {
-        if ($shouldfail) {
-            $this->expectException(\invalid_parameter_exception::class);
-        }
+        // Gain webservice permission.
+        $this->setAdminUser();
 
-        try {
-            get_backup_status::execute($jobid, $backupid);
-        // @codingStandardsIgnoreLine
-        } catch (\dml_exception $e) {
-            // Ignore.
-        }
-    }
-
-    /**
-     * Data provider for test_parameter_validation
-     *
-     * @return array[] Test data
-     * @throws \dml_exception
-     * @throws \moodle_exception
-     */
-    public static function parameter_data_provider(): array {
-        // Create job.
-        $self = new self();
-        $mocks = $self->generate_mock_quiz();
+        // Create mock quiz.
+        $this->resetAfterTest();
+        $mocks = $this->getDataGenerator()->create_mock_quiz();
         $job = ArchiveJob::create(
             '20000000-1234-5678-abcd-ef4242424242',
             $mocks->course->id,
@@ -143,15 +144,42 @@ final class get_backup_status_test extends \advanced_testcase {
             [],
             []
         );
-        $base = [
-            'jobid' => $job->get_jobid(),
-            'backupid' => 'f1d2d2f924e986ac86fdf7b36c94bcdf32beec15',
-        ];
+        $_GET['wstoken'] = 'TEST-WS-TOKEN';
 
+        if ($shouldfail) {
+            $this->expectException(\invalid_parameter_exception::class);
+        }
+
+        get_backup_status::execute(
+            $jobid === null ? $job->get_jobid() : $jobid,
+            $backupid === null ? 'f1d2d2f924e986ac86fdf7b36c94bcdf32beec15' : $backupid
+        );
+    }
+
+    /**
+     * Data provider for test_parameter_validation
+     *
+     * @return array[] Test data
+     * @throws \dml_exception
+     * @throws \moodle_exception
+     */
+    public static function parameter_data_provider(): array {
         return [
-            'Valid' => array_merge($base, ['shouldfail' => false]),
-            'Invalid jobid' => array_merge($base, ['jobid' => '<a href="localhost">Foo</a>', 'shouldfail' => true]),
-            'Invalid backupid' => array_merge($base, ['backupid' => '<a href="localhost">Bar</a>', 'shouldfail' => true]),
+            'Valid' => array_merge([
+                'jobid' => null,
+                'backupid' => null,
+                'shouldfail' => false,
+            ]),
+            'Invalid jobid' => array_merge([
+                'jobid' => '<a href="localhost">Foo</a>',
+                'backupid' => null,
+                'shouldfail' => true,
+            ]),
+            'Invalid backupid' => array_merge([
+                'jobid' => null,
+                'backupid' => '<a href="localhost">Bar</a>',
+                'shouldfail' => true,
+            ]),
         ];
     }
 
@@ -172,7 +200,8 @@ final class get_backup_status_test extends \advanced_testcase {
         $this->setAdminUser();
 
         // Create job.
-        $mocks = $this->generate_mock_quiz();
+        $this->resetAfterTest();
+        $mocks = $this->getDataGenerator()->create_mock_quiz();
         $job = ArchiveJob::create(
             '30000000-1234-5678-abcd-ef4242424242',
             $mocks->course->id,

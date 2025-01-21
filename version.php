@@ -22,11 +22,11 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die(); // @codeCoverageIgnore
 
 $plugin->component = 'quiz_archiver';
-$plugin->release = '1.2.10';
-$plugin->version = 2024070900;
+$plugin->release = '2.2.0';
+$plugin->version = 2024102900;
 $plugin->requires = 2022112800;
-$plugin->supported = [401, 404];
+$plugin->supported = [401, 405];
 $plugin->maturity = MATURITY_STABLE;

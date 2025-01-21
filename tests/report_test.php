@@ -37,100 +37,14 @@ require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
  */
 final class report_test extends \advanced_testcase {
 
-    /** @var string[] Question types present in the reference quiz */
-    const QUESTION_TYPES_IN_REFERENCE_QUIZ = [
-        'description',
-        'multichoice',
-        'truefalse',
-        'match',
-        'shortanswer',
-        'numerical',
-        'essay',
-        'calculated',
-        'calculatedmulti',
-        'calculatedsimple',
-        'ddwtos',
-        'ddmarker',
-        'ddimageortext',
-        'multianswer',
-        'gapselect',
-    ];
-
     /**
-     * Imports the reference course into a new course and returns the reference
-     * quiz, the respective cm, and the course itself.
+     * Returns the data generator for the quiz_archiver plugin
      *
-     * @throws \restore_controller_exception
-     * @throws \dml_exception
-     * @throws \moodle_exception
-     * @return \stdClass Object with keys 'quiz' (the reference quiz), 'cm' (the
-     * respective cm), 'course' (the course itself), 'attemptids' (array of all
-     * attempt ids inside the reference quiz), 'userids' (array of all user ids
-     * with attempts in the reference quiz)
+     * @return \quiz_archiver_generator The data generator for the quiz_archiver plugin
      */
-    protected function prepare_reference_course(): \stdClass {
-        global $DB, $USER;
-        $this->resetAfterTest();
-        $this->setAdminUser();
-
-        // Prepare backup of reference course for restore.
-        $backupid = 'referencequiz';
-        $backuppath = make_backup_temp_directory($backupid);
-        get_file_packer('application/vnd.moodle.backup')->extract_to_pathname(
-            __DIR__ . "/fixtures/referencequiz.mbz",
-            $backuppath
-        );
-
-        // Restore reference course as a new course with default settings.
-        $categoryid = $DB->get_field('course_categories', 'MIN(id)', []);
-        $newcourseid = \restore_dbops::create_new_course('Reference Course', 'REF', $categoryid);
-        $rc = new \restore_controller(
-            $backupid,
-            $newcourseid,
-            \backup::INTERACTIVE_NO,
-            \backup::MODE_GENERAL,
-            $USER->id,
-            \backup::TARGET_NEW_COURSE
-        );
-
-        $this->assertTrue($rc->execute_precheck());
-        $rc->execute_plan();
-        $this->assertSame(backup::STATUS_FINISHED_OK, $rc->get_status(), 'Restore of reference course failed.');
-
-        // 2024-05-14: Do not destroy restore_controller. This will drop temptables without removing them from
-        // $DB->temptables properly, causing DB reset to fail in subsequent tests due to missing tables. Destroying the
-        // restore_controller is optional and not necessary for this test.
-        // $rc->destroy();.
-
-        // Get course and find the reference quiz.
-        $course = get_course($rc->get_courseid());
-        $modinfo = get_fast_modinfo($course);
-        $cms = $modinfo->get_cms();
-        $cm = null;
-        foreach ($cms as $curcm) {
-            if ($curcm->modname == 'quiz' && strpos($curcm->name, 'Reference Quiz') === 0) {
-                $cm = $curcm;
-                break;
-            }
-        }
-        $quiz = $DB->get_record('quiz', ['id' => $cm->instance], '*', MUST_EXIST);
-        $attemptids = array_values(array_map(
-            fn($r): int => $r->id,
-            $DB->get_records('quiz_attempts', ['quiz' => $quiz->id], '', 'id')
-        ));
-
-        $userids = array_values(array_map(
-            fn($r): int => $r->userid,
-            $DB->get_records('quiz_attempts', ['quiz' => $quiz->id], '', 'userid')
-        ));
-
-        return (object) [
-            'course' => $course,
-            'cm' => $cm,
-            'quiz' => $quiz,
-            'attemptids' => $attemptids,
-            'userids' => $userids,
-        ];
+    // @codingStandardsIgnoreLine
+    public static function getDataGenerator(): \quiz_archiver_generator {
+        return parent::getDataGenerator()->get_plugin_generator('quiz_archiver');
     }
 
     /**
@@ -162,7 +76,7 @@ final class report_test extends \advanced_testcase {
     /**
      * Tests validation of webservice tokens
      *
-     * @covers \quiz_archiver\quiz_archiverReport::has_access
+     * @covers \quiz_archiver\Report::has_access
      *
      * @return void
      * @throws \dml_exception
@@ -170,7 +84,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_webservice_token_access_validation(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
         $validtoken = md5("VALID-TEST-TOKEN");
         $invalidtoken = md5("INVALID-TEST-TOKEN");
@@ -197,7 +112,8 @@ final class report_test extends \advanced_testcase {
     /**
      * Test generation of a full attempt report with all sections
      *
-     * @covers \quiz_archiver\quiz_archiverReport::generate
+     * @covers \quiz_archiver\Report::__construct
+     * @covers \quiz_archiver\Report::generate
      *
      * @return void
      * @throws \DOMException
@@ -206,7 +122,8 @@ final class report_test extends \advanced_testcase {
      * @throws \moodle_exception
      */
     public function test_generate_full_report(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
 
         // Generate full report with all sections.
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
@@ -239,7 +156,7 @@ final class report_test extends \advanced_testcase {
             ) . '\s*<\/th>/', $html, 'Overall feedback header not found');
 
         // Verify questions.
-        foreach (self::QUESTION_TYPES_IN_REFERENCE_QUIZ as $qtype) {
+        foreach ($this->getDataGenerator()::QUESTION_TYPES_IN_REFERENCE_QUIZ as $qtype) {
             $this->assertMatchesRegularExpression(
                 '/<[^<>]*class="[^\"<>]*que[^\"<>]*' . preg_quote($qtype, '/') . '[^\"<>]*"[^<>]*>/',
                 $html,
@@ -280,6 +197,8 @@ final class report_test extends \advanced_testcase {
      * Tests generation of a full page report with all sections
      *
      * @covers \quiz_archiver\Report::generate_full_page
+     * @covers \quiz_archiver\Report::convert_image_to_base64
+     * @covers \quiz_archiver\Report::ensure_absolute_url
      *
      * @return void
      * @throws \DOMException
@@ -289,7 +208,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_generate_full_page_stub(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
         $html = $report->generate_full_page(
             $rc->attemptids[0],
@@ -312,7 +232,8 @@ final class report_test extends \advanced_testcase {
      * @throws \moodle_exception
      */
     public function test_generate_report_no_header(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
 
         // Generate report without a header.
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
@@ -348,7 +269,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_generate_report_no_quiz_feedback(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
 
         // Generate report without quiz feedback.
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
@@ -383,7 +305,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_generate_report_no_questions(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
 
         // Generate report without questions.
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
@@ -434,7 +357,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_generate_report_no_question_feedback(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
 
         // Generate report without question feedback.
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
@@ -463,7 +387,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_generate_report_no_general_feedback(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
 
         // Generate report without general feedback.
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
@@ -492,7 +417,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_generate_report_no_rightanswers(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
 
         // Generate report without right answers.
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
@@ -521,7 +447,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_generate_report_no_history(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
 
         // Generate report without answer history.
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
@@ -549,7 +476,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_get_attempt_attachments(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
         $attachments = $report->get_attempt_attachments($rc->attemptids[0]);
         $this->assertNotEmpty($attachments, 'No attachments found');
@@ -575,7 +503,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_get_attempt_attachments_metadata(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
         $attachments = $report->get_attempt_attachments_metadata($rc->attemptids[0]);
         $this->assertNotEmpty($attachments, 'No attachments found');
@@ -609,7 +538,9 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_get_attempts(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
+
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
         $attempts = $report->get_attempts();
 
@@ -628,7 +559,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_get_attempts_metadata(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
 
         // Test without filters.
@@ -646,6 +578,7 @@ final class report_test extends \advanced_testcase {
         $this->assertNotEmpty($attempt->username, 'Attempt metadata does not contain username');
         $this->assertNotEmpty($attempt->firstname, 'Attempt metadata does not contain firstname');
         $this->assertNotEmpty($attempt->lastname, 'Attempt metadata does not contain lastname');
+        $this->assertNotNull($attempt->idnumber, 'Attempt metadata does not contain idnumber');  // ID number can be empty.
 
         // Test filtered.
         $attemptsfilteredexisting = $report->get_attempts_metadata($rc->attemptids);
@@ -671,7 +604,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_get_users_with_attempts(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
 
         $users = $report->get_users_with_attempts();
@@ -682,7 +616,7 @@ final class report_test extends \advanced_testcase {
     /**
      * Tests to retrieve the latest attemptid of a user
      *
-     * @covers \quiz_archiver\Report::get_latest_attemptid_for_user
+     * @covers \quiz_archiver\Report::get_latest_attempt_for_user
      *
      * @return void
      * @throws \dml_exception
@@ -690,7 +624,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_get_latest_attempt_for_user(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
 
         $latestattempt = $report->get_latest_attempt_for_user($rc->userids[0]);
@@ -711,7 +646,8 @@ final class report_test extends \advanced_testcase {
      * @throws \restore_controller_exception
      */
     public function test_attempt_exists(): void {
-        $rc = $this->prepare_reference_course();
+        $this->resetAfterTest();
+        $rc = $this->getDataGenerator()->import_reference_course();
         $report = new Report($rc->course, $rc->cm, $rc->quiz);
 
         $this->assertTrue($report->attempt_exists($rc->attemptids[0]), 'Existing attempt not found');

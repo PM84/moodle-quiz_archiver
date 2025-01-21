@@ -28,9 +28,10 @@ use quiz_archiver\ArchiveJob;
 use quiz_archiver\local\util;
 use quiz_archiver\Report;
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die(); // @codeCoverageIgnore
 
-require_once($CFG->dirroot.'/lib/formslib.php');
+
+require_once($CFG->dirroot.'/lib/formslib.php'); // @codeCoverageIgnore
 
 
 /**
@@ -136,6 +137,7 @@ class archive_quiz_form extends \moodleform {
         $mform->addElement('header', 'header_advanced_settings', get_string('advancedsettings'));
         $mform->setExpanded('header_advanced_settings', false);
 
+        // Advanced options: Paper format.
         $mform->addElement(
             'select',
             'export_attempts_paper_format',
@@ -146,16 +148,7 @@ class archive_quiz_form extends \moodleform {
         $mform->addHelpButton('export_attempts_paper_format', 'export_attempts_paper_format', 'quiz_archiver');
         $mform->setDefault('export_attempts_paper_format', $config->job_preset_export_attempts_paper_format);
 
-        $mform->addElement(
-            'advcheckbox',
-            'export_attempts_keep_html_files',
-            get_string('export_attempts_keep_html_files', 'quiz_archiver'),
-            get_string('export_attempts_keep_html_files_desc', 'quiz_archiver'),
-            $config->job_preset_export_attempts_keep_html_files_locked ? 'disabled' : null
-        );
-        $mform->addHelpButton('export_attempts_keep_html_files', 'export_attempts_keep_html_files', 'quiz_archiver');
-        $mform->setDefault('export_attempts_keep_html_files', $config->job_preset_export_attempts_keep_html_files);
-
+        // Advanced options: Archive filename pattern.
         $mform->addElement(
             'text',
             'archive_filename_pattern',
@@ -189,6 +182,7 @@ class archive_quiz_form extends \moodleform {
         $mform->setDefault('archive_filename_pattern', $config->job_preset_archive_filename_pattern);
         $mform->addRule('archive_filename_pattern', null, 'maxlength', 255, 'client');
 
+        // Advanced options: Attempts filename pattern.
         $mform->addElement(
             'text',
             'export_attempts_filename_pattern',
@@ -222,6 +216,135 @@ class archive_quiz_form extends \moodleform {
         $mform->setDefault('export_attempts_filename_pattern', $config->job_preset_export_attempts_filename_pattern);
         $mform->addRule('export_attempts_filename_pattern', null, 'maxlength', 255, 'client');
 
+        // Advanced options: Image optimization.
+        $mform->addElement(
+            'advcheckbox',
+            'export_attempts_image_optimize',
+            get_string('export_attempts_image_optimize', 'quiz_archiver'),
+            get_string('enable'),
+            $config->job_preset_export_attempts_image_optimize_locked ? 'disabled' : null,
+            ['0', '1']
+        );
+        $mform->addHelpButton('export_attempts_image_optimize', 'export_attempts_image_optimize', 'quiz_archiver');
+        $mform->setDefault('export_attempts_image_optimize', $config->job_preset_export_attempts_image_optimize);
+
+        // Image max width/height fields.
+        $mformgroup = [];
+        $mformgroupfieldseperator = 'x';
+        if ($config->job_preset_export_attempts_image_optimize_width_locked) {
+            $mformgroup[] = $mform->createElement(
+                'static',
+                'export_attempts_image_optimize_width_static',
+                '',
+                $config->job_preset_export_attempts_image_optimize_width
+            );
+            $mform->addElement(
+                'hidden',
+                'export_attempts_image_optimize_width',
+                $config->job_preset_export_attempts_image_optimize_width
+            );
+        } else {
+            $mformgroup[] = $mform->createElement(
+                'text',
+                'export_attempts_image_optimize_width',
+                get_string('export_attempts_image_optimize_width', 'quiz_archiver'),
+                ['size' => 4]
+            );
+            $mform->setDefault('export_attempts_image_optimize_width', $config->job_preset_export_attempts_image_optimize_width);
+        }
+        $mform->setType('export_attempts_image_optimize_width', PARAM_INT);
+
+        if ($config->job_preset_export_attempts_image_optimize_height_locked) {
+            $mformgroup[] = $mform->createElement(
+                'static',
+                'export_attempts_image_optimize_height_static',
+                '',
+                $config->job_preset_export_attempts_image_optimize_height
+            );
+            $mform->addElement(
+                'hidden',
+                'export_attempts_image_optimize_height',
+                $config->job_preset_export_attempts_image_optimize_height
+            );
+        } else {
+            $mformgroup[] = $mform->createElement(
+                'text',
+                'export_attempts_image_optimize_height',
+                get_string('export_attempts_image_optimize_height', 'quiz_archiver'),
+                ['size' => 4]
+            );
+            $mform->setDefault('export_attempts_image_optimize_height', $config->job_preset_export_attempts_image_optimize_height);
+            $mformgroupfieldseperator .= '&nbsp;';
+        }
+        $mform->setType('export_attempts_image_optimize_height', PARAM_INT);
+
+        $mformgroup[] = $mform->createElement('static', 'export_attempts_image_optimize_px', '', 'px');
+
+        $mform->addGroup(
+            $mformgroup,
+            'export_attempts_image_optimize_group',
+            get_string('export_attempts_image_optimize_group', 'quiz_archiver'),
+            [$mformgroupfieldseperator, ''],
+            false
+        );
+        $mform->addHelpButton('export_attempts_image_optimize_group', 'export_attempts_image_optimize_group', 'quiz_archiver');
+        $mform->hideIf('export_attempts_image_optimize_group', 'export_attempts_image_optimize', 'notchecked');
+
+        // Image quality field.
+        $mformgroup = [];
+        if ($config->job_preset_export_attempts_image_optimize_quality_locked) {
+            $mformgroup[] = $mform->createElement(
+                'static',
+                'export_attempts_image_optimize_quality_static',
+                '',
+                $config->job_preset_export_attempts_image_optimize_quality
+            );
+            $mform->addElement(
+                'hidden',
+                'export_attempts_image_optimize_quality',
+                $config->job_preset_export_attempts_image_optimize_quality
+            );
+        } else {
+            $mformgroup[] = $mform->createElement(
+                'text',
+                'export_attempts_image_optimize_quality',
+                get_string('export_attempts_image_optimize_quality', 'quiz_archiver'),
+                ['size' => 2]
+            );
+            $mform->setDefault(
+                'export_attempts_image_optimize_quality',
+                $config->job_preset_export_attempts_image_optimize_quality
+            );
+        }
+        $mform->setType('export_attempts_image_optimize_quality', PARAM_INT);
+
+        $mformgroup[] = $mform->createElement('static', 'export_attempts_image_optimize_quality_percent', '', '%');
+        $mform->addGroup(
+            $mformgroup,
+            'export_attempts_image_optimize_quality_group',
+            get_string('export_attempts_image_optimize_quality', 'quiz_archiver'),
+            '',
+            false
+        );
+        $mform->addHelpButton(
+            'export_attempts_image_optimize_quality_group',
+            'export_attempts_image_optimize_quality',
+            'quiz_archiver'
+        );
+        $mform->hideIf('export_attempts_image_optimize_quality_group', 'export_attempts_image_optimize', 'notchecked');
+
+        // Advanced options: Keep HTML files.
+        $mform->addElement(
+            'advcheckbox',
+            'export_attempts_keep_html_files',
+            get_string('export_attempts_keep_html_files', 'quiz_archiver'),
+            get_string('export_attempts_keep_html_files_desc', 'quiz_archiver'),
+            $config->job_preset_export_attempts_keep_html_files_locked ? 'disabled' : null
+        );
+        $mform->addHelpButton('export_attempts_keep_html_files', 'export_attempts_keep_html_files', 'quiz_archiver');
+        $mform->setDefault('export_attempts_keep_html_files', $config->job_preset_export_attempts_keep_html_files);
+
+        // Advanced options: Autodelete.
         $mform->addElement(
             'advcheckbox',
             'archive_autodelete',
@@ -233,27 +356,36 @@ class archive_quiz_form extends \moodleform {
         $mform->addHelpButton('archive_autodelete', 'archive_autodelete', 'quiz_archiver');
         $mform->setDefault('archive_autodelete', $config->job_preset_archive_autodelete);
 
+        $mformgroup = [];  // This is wrapped in a form group to make hideIf() work with static elements.
         if ($config->job_preset_archive_retention_time_locked) {
             $durationwithunit = util::duration_to_unit($config->job_preset_archive_retention_time);
-            $mform->addElement(
+            $mformgroup[] = $mform->createElement(
                 'static',
                 'archive_retention_time_static',
-                get_string('archive_retention_time', 'quiz_archiver'),
+                '',
                 $durationwithunit[0].' '.$durationwithunit[1]
             );
             $mform->addElement('hidden', 'archive_retention_time', $config->job_preset_archive_retention_time);
         } else {
-            $mform->addElement(
+            $mformgroup[] = $mform->createElement(
                 'duration',
                 'archive_retention_time',
-                get_string('archive_retention_time', 'quiz_archiver'),
+                '',
                 ['optional' => false, 'defaultunit' => DAYSECS],
             );
             $mform->setDefault('archive_retention_time', $config->job_preset_archive_retention_time);
         }
         $mform->setType('archive_retention_time', PARAM_INT);
-        $mform->addHelpButton('archive_retention_time', 'archive_retention_time', 'quiz_archiver');
-        $mform->hideIf('archive_retention_time', 'archive_autodelete', 'notchecked');
+
+        $mform->addGroup(
+            $mformgroup,
+            'archive_retention_time_group',
+            get_string('archive_retention_time', 'quiz_archiver'),
+            '',
+            false
+        );
+        $mform->addHelpButton('archive_retention_time_group', 'archive_retention_time', 'quiz_archiver');
+        $mform->hideIf('archive_retention_time_group', 'archive_autodelete', 'notchecked');
 
         // Submit.
         $mform->closeHeaderBefore('submitbutton');

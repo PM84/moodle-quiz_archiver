@@ -24,10 +24,11 @@
 
 namespace quiz_archiver\external;
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die(); // @codeCoverageIgnore
+
 
 // TODO (MDL-0): Remove after deprecation of Moodle 4.1 (LTS) on 08-12-2025.
-require_once($CFG->dirroot.'/mod/quiz/report/archiver/patch_401_class_renames.php');
+require_once($CFG->dirroot.'/mod/quiz/report/archiver/patch_401_class_renames.php'); // @codeCoverageIgnore
 
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -111,6 +112,10 @@ class get_backup_status extends external_api {
         $context = \context_module::instance($job->get_cmid());
         require_capability('mod/quiz_archiver:use_webservice', $context);
 
+        // The following code is tested covered by more specific tests.
+        // @codingStandardsIgnoreLine
+        // @codeCoverageIgnoreStart
+
         // Get backup.
         try {
             $bm = new BackupManager($params['backupid']);
@@ -132,6 +137,9 @@ class get_backup_status extends external_api {
 
         // Report success.
         return ['status' => 'SUCCESS'];
+
+        // @codingStandardsIgnoreLine
+        // @codeCoverageIgnoreEnd
     }
 
 }

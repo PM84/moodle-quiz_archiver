@@ -39,6 +39,8 @@ $string['quiz_archiver:archive'] = 'Erstellen und Löschen von Testarchiven';
 $string['quiz_archiver:use_webservice'] = 'Webservice des Quiz Archivers nutzen (lesend und schreibend)';
 
 // General.
+$string['a'] = '{$a}';
+$string['progress'] = 'Fortschritt';
 $string['quiz_archive'] = 'Testarchiv';
 $string['quiz_archive_details'] = 'Details des Testarchivs';
 $string['quiz_archive_not_found'] = 'Testarchiv nicht gefunden';
@@ -56,10 +58,22 @@ $string['archive_retention_time_help'] = 'Die Speicherdauer dieses Testarchivs, 
 $string['create_quiz_archive'] = 'Neues Testarchiv erstellen';
 $string['archive_quiz_form_desc'] = 'Verwenden Sie dieses Formular um den ausgewählten Test zu archivieren. Die Archivierung findet asynchron statt und kann einige Zeit in Anspruch nehmen. Sie können den aktuellen Status jederzeit auf dieser Seite überprüfen sowie fertige Archive herunterladen.';
 $string['error_archive_quiz_form_validation_failed'] = 'Validierung der gesendeten Formulardaten fehlgeschlagen. Bitte überprüfen Sie Ihre Eingaben.';
+$string['error_plugin_is_not_configured'] = 'Fehler: Das Quiz Archiver Plugin ist noch nicht konfiguriert. Bitte kontaktieren Sie Ihren Website-Administrator.';
+$string['error_quiz_cannot_be_archived_unknown'] = 'Dieser Test kann aufgrund eines unbekannten Fehlers nicht archiviert werden. Bitte melden Sie dieses Problem an die Plugin-Entwickler.';
 $string['export_attempts'] = 'Testversuche exportieren';
 $string['export_attempts_help'] = 'Es werden stets alle Testversuche exportiert';
 $string['export_attempts_num'] = 'Testversuche ({$a}) exportieren';
 $string['export_attempts_num_help'] = 'Es werden stets alle Testversuche exportiert';
+$string['export_attempts_image_optimize'] = 'Bilder optimieren';
+$string['export_attempts_image_optimize_help'] = 'Wenn aktiviert, werden Bilder innerhalb der Versuchsberichte komprimiert und große Bilder unter Berücksichtigung der unten angegebenen Dimensionen verkleinert. Bilder werden ausschließlich verkleinert. Dies betrifft nur PDF-Exporte. HTML-Quelldateien behalten stets die Originalbildgröße bei.';
+$string['export_attempts_image_optimize_group'] = 'Maximale Bildauflösung';
+$string['export_attempts_image_optimize_group_help'] = 'Maximale Auflösung für Bilder innerhalb der Versuchsberichte in Pixeln (Breite x Höhe). Wenn ein Bild breiter oder höher als die angegebenen Dimensionen ist, wird es so verkleinert, dass es vollständig in die angegebenen Dimensionen passt. Das Seitenverhältnis wird dabei beibehalten. Dies kann nützlich sein, um die Gesamtgröße des Archivs zu reduzieren, wenn große Bilder im Test verwendet werden.';
+$string['export_attempts_image_optimize_height'] = 'Maximale Bildhöhe';
+$string['export_attempts_image_optimize_height_help'] = 'Maximale Höhe für Bilder innerhalb der Versuchsberichte in Pixeln. Wenn ein Bild höher als die angegebene Höhe ist, wird es auf die angegebene Höhe verkleinert, wobei das Seitenverhältnis beibehalten wird.';
+$string['export_attempts_image_optimize_quality'] = 'Bildkompression';
+$string['export_attempts_image_optimize_quality_help'] = 'Qualität der komprimierten Bilder (0 - 100 %). Je höher die Qualität, desto größer die Versuchsberichte. Diese Einstellung verhält sich wie die JPEG-Kompressionsintensität. Ein guter Richtwert sind 85 %.';
+$string['export_attempts_image_optimize_width'] = 'Maximale Bildbreite';
+$string['export_attempts_image_optimize_width_help'] = 'Maximale Breite für Bilder innerhalb der Versuchsberichte in Pixeln. Wenn ein Bild breiter als die angegebene Breite ist, wird es auf die angegebene Breite verkleinert, wobei das Seitenverhältnis beibehalten wird.';
 $string['export_attempts_keep_html_files'] = 'HTML-Dateien';
 $string['export_attempts_keep_html_files_desc'] = 'HTML-Quelldateien behalten';
 $string['export_attempts_keep_html_files_help'] = 'Speichert die HTML-Quelldateien zusätzlich zu den erzeugten PDFs während des Exportvorgangs. Dies kann nützlich sein, wenn Sie auf den HTML DOM zugreifen möchten, aus dem die PDFs erzeugt wurden. Deaktivieren dieser Option kann die Archivgröße deutlich reduzieren!';
@@ -86,8 +100,8 @@ $string['export_report_section_history_help'] = 'Antworthistorie für alle Testf
 $string['export_report_section_attachments'] = 'Dateiabgaben einschließen';
 $string['export_report_section_attachments_help'] = 'Alle Dateiabgaben (z.B. von Freitextaufgaben) im Archiv einschließen. Warnung: Dies kann die Archivgröße erheblich erhöhen.';
 $string['job_overview'] = 'Testarchive';
+$string['last_updated'] = 'Zuletzt aktualisiert';
 $string['num_attempts'] = 'Anzahl der Testversuche';
-$string['error_plugin_is_not_configured'] = 'Fehler: Das Quiz Archiver Plugin ist noch nicht konfiguriert. Bitte kontaktieren Sie Ihren Website-Administrator.';
 
 // Job creation form: Filename pattern.
 $string['archive_filename_pattern'] = 'Archivname';
@@ -120,6 +134,7 @@ $string['export_attempts_filename_pattern_variable_attemptid'] = 'Versuchs-ID';
 $string['export_attempts_filename_pattern_variable_username'] = 'Nutzer Anmeldename';
 $string['export_attempts_filename_pattern_variable_firstname'] = 'Nutzer Vorname';
 $string['export_attempts_filename_pattern_variable_lastname'] = 'Nutzer Nachname';
+$string['export_attempts_filename_pattern_variable_idnumber'] = 'Nutzer ID-Nummer';
 $string['export_attempts_filename_pattern_variable_timestart'] = 'Versuchsstart (Unix-Zeitstempel)';
 $string['export_attempts_filename_pattern_variable_timefinish'] = 'Versuchsende (Unix-Zeitstempel)';
 $string['export_attempts_filename_pattern_variable_date'] = 'Aktuelles Datum <small>(YYYY-MM-DD)</small>';
@@ -129,23 +144,38 @@ $string['error_invalid_attempt_filename_pattern'] = 'Ungültiger Versuchsname. B
 
 // Job.
 $string['delete_artifact'] = 'Testarchiv löschen';
+$string['delete_artifact_success'] = 'Testarchiv des Archivierungsauftrags mit der ID <code>{$a}</code> wurde erfolgreich gelöscht. Die Auftragsmetadaten existieren weiterhin und können mit der Schaltfläche "Archivierungsauftrag löschen" endgültig gelöscht werden.';
 $string['delete_artifact_warning'] = 'Sind Sie sicher, dass Sie dieses Testarchiv inklusive <b>aller archivierten Daten</b> löschen möchten?. Die Metadaten des Archivierungsauftrags werden hierbei nicht gelöscht.';
 $string['delete_job'] = 'Archivierungsauftrag löschen';
+$string['delete_job_success'] = 'Archivierungsauftrag mit der ID <code>{$a}</code> wurde erfolgreich gelöscht.';
 $string['delete_job_warning'] = 'Sind Sie sicher, dass Sie diesen Archivierungsauftrag <b>inklusive aller archivierten Daten</b> löschen möchten?';
 $string['delete_job_warning_retention'] = '<b>Achtung:</b> Dieser Archivierungsauftrag ist für die automatische Löschung am <code>{$a}</code> vorgesehen. Sind Sie absolut sicher, dass Sie ihn <b>vor Ablauf seiner geplanten Lebensdauer</b> löschen möchten?';
 $string['jobid'] = 'Auftrags-ID';
-$string['job_created_successfully'] = 'Neuer Archivierungsauftrag erfolgreich erstellt: {$a}';
+$string['job_created_successfully'] = 'Neuer Archivierungsauftrag erfolgreich erstellt. Auftrags-ID: {$a}';
 $string['job_status_UNKNOWN'] = 'Unbekannt';
+$string['job_status_UNKNOWN_help'] = 'Der Status dieses Auftrags ist unbekannt. Bitte melden Sie dieses Problem, wenn es weiterhin besteht.';
 $string['job_status_UNINITIALIZED'] = 'Neu';
+$string['job_status_UNINITIALIZED_help'] = 'Der Auftrag wurde noch nicht initialisiert.';
 $string['job_status_AWAITING_PROCESSING'] = 'Wartend';
+$string['job_status_AWAITING_PROCESSING_help'] = 'Der Auftrag wurde erfasst und wartet auf die Verarbeitung durch den Archive Worker Service.';
 $string['job_status_RUNNING'] = 'Läuft';
+$string['job_status_RUNNING_help'] = 'Der Auftrag wird derzeit vom Archive Worker Service verarbeitet. Der Fortschritt des Auftrags wird periodisch aktualisiert (Standard: alle 15 Sekunden).';
+$string['job_status_WAITING_FOR_BACKUP'] = 'Backup ausstehend';
+$string['job_status_WAITING_FOR_BACKUP_help'] = 'Der Auftrag wartet auf die Erstellung eines Moodle-Backups. Dies kann je nach Kursgröße einige Zeit in Anspruch nehmen.';
+$string['job_status_FINALIZING'] = 'Finalisieren';
+$string['job_status_FINALIZING_help'] = 'Der Archive Worker Service finalisiert das Archiv und überträgt es an Moodle. Dies kann je nach Größe des Archivs einige Zeit in Anspruch nehmen.';
 $string['job_status_FINISHED'] = 'Fertig';
+$string['job_status_FINISHED_help'] = 'Der Auftrag wurde erfolgreich abgeschlossen. Das Archiv ist bereit zum Download.';
 $string['job_status_FAILED'] = 'Fehler';
+$string['job_status_FAILED_help'] = 'Der Auftrag ist fehlgeschlagen. Bitte versuchen Sie es erneut und kontaktieren Sie Ihren Systemadministrator, wenn das Problem weiterhin besteht.';
 $string['job_status_TIMEOUT'] = 'Zeitüberschreitung';
+$string['job_status_TIMEOUT_help'] = 'Der Auftrag wurde aufgrund einer Zeitüberschreitung abgebrochen. Dies kann bei sehr großen Tests passieren. Bitte kontaktieren Sie Ihren Systemadministrator, wenn das Problem weiterhin besteht.';
 $string['job_status_DELETED'] = 'Gelöscht';
+$string['job_status_DELETED_help'] = 'Das Testarchiv und alle zugehörigen Daten wurden entfernt. Die Auftragsmetadaten existieren weiterhin und können bei Bedarf endgültig gelöscht werden.';
 
 // Job details.
 $string['archive_already_signed'] = 'Testarchiv ist bereits signiert';
+$string['archive_already_signed_with_jobid'] = 'Testarchiv des Archivierungsauftrag mit der ID <code>{$a}</code> ist bereits signiert.';
 $string['archive_autodelete_deleted'] = 'Testarchive wurde automatisch gelöscht';
 $string['archive_autodelete_in'] = 'Testarchiv wird gelöscht in {$a}';
 $string['archive_autodelete_disabled'] = 'Deaktiviert';
@@ -154,9 +184,12 @@ $string['archive_deleted'] = 'Testarchiv wurde gelöscht';
 $string['archive_not_signed'] = 'Testarchiv ist nicht signiert';
 $string['archive_signature'] = 'Signatur';
 $string['archive_signed_successfully'] = 'Testarchiv erfolgreich signiert';
+$string['archive_signed_successfully_with_jobid'] = 'Testarchiv des Archivierungsauftrag mit der ID <code>{$a}</code> wurde erfolgreich signiert.';
 $string['archive_signing_failed'] = 'Signierung des Testarchivs fehlgeschlagen';
+$string['archive_signing_failed_with_jobid'] = 'Signierung des Testarchivs des Archivierungsauftrags mit der ID <code>{$a}</code> ist aufgrund eines generischen Fehlers fehlgeschlagen. Bitte überprüfen Sie die Plugin-Einstellungen und versuchen Sie es erneut.';
 $string['archive_signing_failed_no_artifact'] = 'Keine gültige Archivdatei gefunden';
-$string['archive_signing_failed_tsp_disabled'] = 'Signierung global ist deaktiviert';
+$string['archive_signing_failed_no_artifact_with_jobid'] = 'Signierung des Testarchivs des Archivierungsauftrags mit der ID <code>{$a}</code> ist fehlgeschlagen. Keine gültige Archivdatei gefunden.';
+$string['archive_signing_failed_tsp_disabled'] = 'Signierung ist global deaktiviert';
 $string['sign_archive'] = 'Testarchiv jetzt signieren';
 $string['sign_archive_warning'] = 'Sind Sie sicher, dass Sie dieses Testarchiv jetzt signieren möchten?';
 $string['signed_on'] = 'Signiert am';
@@ -173,7 +206,7 @@ $string['tsp_client_error_http_code'] = 'TSP-Server hat einen unerwarteten HTTP 
 $string['setting_autoconfigure'] = 'Automatische Konfiguration';
 $string['setting_header_archive_worker'] = 'Archive Worker Service';
 $string['setting_header_archive_worker_desc'] = 'Konfiguration des Archive Worker Services sowie des Moodle Webservices.';
-$string['setting_header_docs_desc'] = 'Dieses Plugin archiviert Testversuche als PDF- und HTML-Dateien zur langfristigen Speicherung unabhängig von Moodle. Es <b>erfordert die Installation eines separaten <a href="https://github.com/ngandrass/moodle-quiz-archive-worker" target="_blank">Archive Worker Services</a></b> um korrekt zu funktionieren. Die <a href="https://github.com/ngandrass/moodle-quiz_archiver#readme" target="_blank">Dokumentation</a> enthält alle notwendigen Informationen und Installationsanweisungen.';
+$string['setting_header_docs_desc'] = 'Dieses Plugin archiviert Testversuche als PDF- und HTML-Dateien zur langfristigen Speicherung unabhängig von Moodle. Es <b>erfordert die Installation eines separaten <a href="https://quizarchiver.gandrass.de/installation/archiveworker/" target="_blank">Archive Worker Services</a></b> um korrekt zu funktionieren. Die <a href="https://quizarchiver.gandrass.de/" target="_blank">Dokumentation</a> enthält alle notwendigen Informationen und Installationsanweisungen.';
 $string['setting_header_job_presets'] = 'Archivierungs-Vorgaben';
 $string['setting_header_job_presets_desc'] = 'Systemweite Vorgaben für die Erstellung von Testarchiven. Hinterlegte Standardwerte können bei der Erstellung eines neuen Testarchivs individuell anpassen. Jede einzelne Einstellung kann jedoch auch gesperrt werden um zu verhindern, dass Manager / Trainer diese verändern können. Dies kann nützlich sein, um organisationsweite Archivierungsrichtlinien durchzusetzen.';
 $string['setting_header_tsp'] = 'Signierung von Testarchiven';
@@ -190,9 +223,9 @@ $string['setting_tsp_server_url'] = 'TSP-Server URL';
 $string['setting_tsp_server_url_desc'] = 'URL des Time-Stamp Protocol (TSP) Servers, der für die Signierung von Testarchiven genutzt wird.<br/>Beispiele: <code>https://freetsa.org/tsr</code>, <code>https://zeitstempel.dfn.de</code>, <code>http://timestamp.digicert.com</code>';
 $string['setting_webservice_desc'] = 'Der externe Service (Webservice), welcher alle <code>quiz_archiver_*</code> Funktionen ausführen darf. Er muss ebenfalls die Berechtigung haben, Dateien hoch- und herunterzuladen.';
 $string['setting_webservice_userid'] = 'Webservice Nutzer-ID';
-$string['setting_webservice_userid_desc'] = 'User-ID des Moodle Nutzers, der vom Archive Worker Service genutzt wird, um auf Testdaten zuzugreifen. Er muss alle Berechtigungen besitzen, die in der <a href="https://github.com/ngandrass/moodle-quiz_archiver#configuration" target="_blank">Dokumentation</a> aufgelistet sind, um korrekt zu funktionieren. Aus Sicherheitsgründen sollte dies ein dedizierter Nutzer ohne globale Administrationsrechte sein.';
+$string['setting_webservice_userid_desc'] = 'User-ID des Moodle Nutzers, der vom Archive Worker Service genutzt wird, um auf Testdaten zuzugreifen. Er muss alle Berechtigungen besitzen, die in der <a href="https://quizarchiver.gandrass.de/configuration/initialconfig/manual" target="_blank">Dokumentation</a> aufgelistet sind, um korrekt zu funktionieren. Aus Sicherheitsgründen sollte dies ein dedizierter Nutzer ohne globale Administrationsrechte sein.';
 $string['setting_worker_url'] = 'Archive Worker URL';
-$string['setting_worker_url_desc'] = 'URL des Archive Worker Services, der für die Ausführung von Archivierungsaufträgen genutzt wird.<br/>Beispiel: <code>http://127.0.0.1:8080</code> oder <code>http://moodle-quiz-archive-worker:8080</code>';
+$string['setting_worker_url_desc'] = 'URL des Archive Worker Services, der für die Ausführung von Archivierungsaufträgen genutzt wird. Wenn Sie den Quiz Archiver lediglich ausprobieren wollen, können Sie vorerst auch den <a href="https://quizarchiver.gandrass.de/installation/archiveworker/#using-the-free-public-demo-service" target="_blank">kostenfreien öffentlichen Archive Worker Service</a> nutzen. <br/>Beispiel: <code>http://127.0.0.1:8080</code> oder <code>http://moodle-quiz-archive-worker:8080</code>';
 
 // Errors.
 $string['error_worker_connection_failed'] = 'Verbindung zum Archive Worker fehlgeschlagen.';
@@ -229,7 +262,7 @@ $string['task_autodelete_job_artifacts_report'] = '{$a} Testarchive gelöscht.';
 $string['autoinstall_already_configured'] = 'Plugin ist bereits konfiguriert';
 $string['autoinstall_already_configured_long'] = 'Das Quiz Archiver Plugin ist bereits konfiguriert. Eine erneute automatische Konfiguration ist nicht möglich.';
 $string['autoinstall_cancelled'] = 'Die automatische Konfiguration des Quiz Archiver Plugins wurde abgebrochen. Es wurden keine Einstellungen verändert.';
-$string['autoinstall_explanation'] = 'Das Quiz Archiver Plugin erfordert anfangs einige Konfigurationsschritte, um zu funktionieren (siehe  <a href="https://github.com/ngandrass/moodle-quiz_archiver/blob/master/README.md" target="_blank">Installation</a>). Sie können diese Einstellungen entweder manuell vornehmen, oder die automatische Konfigurationsfunktion verwenden um alle Moodle-bezogenen Einstellungen zu setzen.';
+$string['autoinstall_explanation'] = 'Das Quiz Archiver Plugin erfordert anfangs einige Konfigurationsschritte, um zu funktionieren (siehe  <a href="https://quizarchiver.gandrass.de/configuration/" target="_blank">Konfiguration</a>). Sie können diese Einstellungen entweder manuell vornehmen, oder die automatische Konfigurationsfunktion verwenden um alle Moodle-bezogenen Einstellungen zu setzen.';
 $string['autoinstall_explanation_details'] = 'Die automatische Konfiguration übernimmt die folgenden Schritte:<ul><li>Setzen aller Plugin-Einstellungen auf ihre Standardwerte</li><li>Aktivieren von Webservices und dem REST-Protokoll</li><li>Erstellen einer Quiz Archiver Service Rolle und eines entsprechenden Nutzers</li><li>Erstellen eines neuen Webservices mit allen erforderlichen Webservice-Funktionen</li><li>Autorisieren des Nutzers zur Nutzung des Webservices</li></ul>';
 $string['autoinstall_failure'] = 'Die automatische Konfiguration des Quiz Archiver Plugins ist <b>fehlgeschlagen</b>.';
 $string['autoinstall_plugin'] = 'Quiz Archiver: Automatische Konfiguration';

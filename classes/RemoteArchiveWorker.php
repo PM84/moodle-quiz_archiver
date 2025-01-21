@@ -27,7 +27,7 @@ namespace quiz_archiver;
 use curl;
 
 // @codingStandardsIgnoreLine
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die(); // @codeCoverageIgnore
 
 
 /**
@@ -45,7 +45,7 @@ class RemoteArchiveWorker {
     protected \stdClass $config;
 
     /** @var int Version of the used API */
-    public const API_VERSION = 5;
+    public const API_VERSION = 6;
 
     /**
      * RemoteArchiveWorker constructor
@@ -95,16 +95,16 @@ class RemoteArchiveWorker {
         // Prepare request payload.
         $payload = json_encode(array_merge(
             [
-            "api_version" => self::API_VERSION,
-            "moodle_base_url" => $moodleurlbase,
-            "moodle_ws_url" => $moodleurlbase.'/webservice/rest/server.php',
-            "moodle_upload_url" => $moodleurlbase.'/webservice/upload.php',
-            "wstoken" => $wstoken,
-            "courseid" => $courseid,
-            "cmid" => $cmid,
-            "quizid" => $quizid,
-            "task_archive_quiz_attempts" => $taskarchivequizattempts,
-            "task_moodle_backups" => $taskmoodlebackups,
+                "api_version" => self::API_VERSION,
+                "moodle_base_url" => $moodleurlbase,
+                "moodle_ws_url" => $moodleurlbase.'/webservice/rest/server.php',
+                "moodle_upload_url" => $moodleurlbase.'/webservice/upload.php',
+                "wstoken" => $wstoken,
+                "courseid" => $courseid,
+                "cmid" => $cmid,
+                "quizid" => $quizid,
+                "task_archive_quiz_attempts" => $taskarchivequizattempts,
+                "task_moodle_backups" => $taskmoodlebackups,
             ],
             $joboptions
         ));
@@ -126,6 +126,8 @@ class RemoteArchiveWorker {
         $data = json_decode($result);
 
         // Handle errors.
+        // @codingStandardsIgnoreLine
+        // @codeCoverageIgnoreStart
         if ($httpstatus != 200) {
             if ($data === null) {
                 throw new \UnexpectedValueException("Decoding of the archive worker response failed. HTTP status code $httpstatus");
@@ -139,6 +141,8 @@ class RemoteArchiveWorker {
 
         // Decoded JSON data containing jobid and job_status returned on success.
         return $data;
+        // @codingStandardsIgnoreLine
+        // @codeCoverageIgnoreEnd
     }
 
 }
